@@ -1,6 +1,6 @@
 import tomllib  # Python 3.11+
 from pathlib import Path
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
 from pydantic import BaseModel, Field, ConfigDict
 import polars as pl
 from loguru import logger
@@ -106,39 +106,6 @@ class ReportConfig(BaseModel):
         )
 
 
-class LegacyConfig(BaseModel):
-    """Устаревший формат с секцией [reports_export_settings."имя"].
-    Оставлен только для чтения существующих файлов."""
-    model_config = ConfigDict(extra='allow')
-    reports_export_settings: Dict[str, ReportConfig] = Field(default_factory=dict)
-
-
-def parse_config(data: dict, stem: str) -> ReportConfig | None:
-    """Разбирает TOML-данные: плоский формат или legacy-обёртку."""
-    if "reports_export_settings" not in data:
-        return ReportConfig.model_validate(data)
-
-    legacy = LegacyConfig.model_validate(data)
-    sections = legacy.reports_export_settings
-    if not sections:
-        logger.error(f"❌ Legacy TOML: нет секций reports_export_settings (ожидалась '{stem}')")
-        return None
-
-    if stem in sections:
-        extras = [k for k in sections if k != stem]
-        if extras:
-            logger.warning(f"⚠️ Legacy TOML: лишние секции {extras} в файле '{stem}.toml' — проигнорированы")
-        report = sections[stem]
-    else:
-        key = next(iter(sections))
-        logger.warning(
-            f"⚠️ Legacy TOML: ключ секции '{key}' не совпадает с именем файла '{stem}.toml' — используется '{key}'"
-        )
-        report = sections[key]
-
-    return report
-
-
 def save_config(config_table: BaseModel, toml_file: str):
     """Сохраняет конфиг в TOML через json промежуточный шаг"""
     path = Path(toml_file)
@@ -168,7 +135,7 @@ def save_config(config_table: BaseModel, toml_file: str):
 
 
 def load_config(toml_file: str | Path, df: Optional[pl.DataFrame] = None, event_col: Optional[str] = None) -> ReportConfig | None:
-    """Загружает конфигурацию из TOML (плоский или legacy-формат)."""
+    """Загружает конфигурацию отчёта из плоского TOML (автогенерирует, если файла нет)."""
     path_toml_file = env.get_project_root() / Path(toml_file)
 
     if not path_toml_file.exists():
@@ -183,7 +150,7 @@ def load_config(toml_file: str | Path, df: Optional[pl.DataFrame] = None, event_
     with open(path_toml_file, 'rb') as f:  # tomllib требует bytes
         toml_data = tomllib.load(f)
 
-    return parse_config(toml_data, stem=path_toml_file.stem)
+    return ReportConfig.model_validate(toml_data)
 
 
 def apply_schema_to_dataset(df: pl.DataFrame, report_settings: ReportConfig) -> pl.DataFrame:
