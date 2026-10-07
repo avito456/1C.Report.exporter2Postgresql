@@ -1,0 +1,66 @@
+[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию"]
+use = false
+table_name = "СВЕРКА_ТоварыПереданныеНаКомиссию_table"
+schema_name = "marts"
+event_time = ""
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "stock_date"
+alias = "stock_date"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "wh_guid"
+alias = "wh_guid"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "item_guid"
+alias = "item_guid"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "starting_balance"
+alias = "starting_balance"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "debet"
+alias = "debet"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "credit"
+alias = "credit"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "ending_balance"
+alias = "ending_balance"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "Номенклатура"
+alias = "номенклатура"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+name = "Склад"
+alias = "склад"
+type = "string"
+comment = ""
+
+[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".indexes]]
+use = false
+name = "default_idx"
+columns = ["stock_date"]
+unique = false

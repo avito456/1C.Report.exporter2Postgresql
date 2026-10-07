@@ -1,0 +1,265 @@
+[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)"]
+use = true
+table_name = "mrt_rep__invoice_multiorder"
+schema_name = "marts"
+event_time = "client_order_date"
+comment = "Эффективность мультисклада (Крюков)"
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "Mp agreement type"
+alias = "mp_agreement_type"
+type = "string"
+comment = "Тип отгрузки на МП (пусто в ИМ)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "Client order"
+alias = "client_order"
+type = "string"
+comment = "Номер заказа по данным клиента"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "Client order date"
+alias = "client_order_date"
+type = "date"
+comment = "Дата заказа"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "Item guid"
+alias = "item_guid"
+type = "uuid"
+comment = "guid товара"
+
+
+
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "Номенклатура"
+alias = "номенклатура"
+type = "string"
+comment = ""
+
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "Wh single code"
+alias = "wh_single_code"
+type = "string"
+comment = "Единый код склада"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "order"
+alias = "order"
+type = "string"
+comment = "Номер заказа"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "ordered_orders"
+alias = "ordered_orders"
+type = "string"
+comment = "Заказано (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "ordered_items"
+alias = "ordered_items"
+type = "string"
+comment = "Заказано (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "ordered_sum"
+alias = "ordered_sum"
+type = "float"
+comment = "Заказано (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "handle_orders"
+alias = "handle_orders"
+type = "float"
+comment = "В обработку (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "handle_items"
+alias = "handle_items"
+type = "float"
+comment = "В обработку (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "handle_sum"
+alias = "handle_sum"
+type = "float"
+comment = "В обработку (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "unpaid_orders"
+alias = "unpaid_orders"
+type = "float"
+comment = "Отмены из-за неоплаты (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "unpaid_items"
+alias = "unpaid_items"
+type = "float"
+comment = "Отмены из-за неоплаты (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "unpaid_sum"
+alias = "unpaid_sum"
+type = "float"
+comment = "Отмены из-за неоплаты (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancelled_orders"
+alias = "cancelled_orders"
+type = "float"
+comment = "Отмены из заказов в работе (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancelled_items"
+alias = "cancelled_items"
+type = "float"
+comment = "Отмены из заказов в работе (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancelled_sum"
+alias = "cancelled_sum"
+type = "float"
+comment = "Отмены из заказов в работе (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancel_by_client_items"
+alias = "cancel_by_client_items"
+type = "float"
+comment = "Отмены по инициативе клиента (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancel_by_client_sum"
+alias = "cancel_by_client_sum"
+type = "float"
+comment = "Отмены по инициативе клиента (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancel_out_of_stock_items"
+alias = "cancel_out_of_stock_items"
+type = "float"
+comment = "Отмены нет в наличии (товары)Отмены нет в наличии (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancel_out_of_stock_sum"
+alias = "cancel_out_of_stock_sum"
+type = "float"
+comment = "Отмены нет в наличии (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "cancel_dispatcher_items"
+alias = "cancel_dispatcher_items"
+type = "float"
+comment = "Автоотмена нет в наличии (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "СуммаТоваровОтмененоОтменаДиспетчером"
+alias = "сумматоваровотмененоотменадиспетчером"
+type = "float"
+comment = ""
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "on_way_orders"
+alias = "on_way_orders"
+type = "float"
+comment = "Товары в пути (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "on_way_items"
+alias = "on_way_items"
+type = "float"
+comment = "Товары в пути (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "on_way_sum"
+alias = "on_way_sum"
+type = "float"
+comment = "Товары в пути (сумма)"
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "sold_orders"
+alias = "sold_orders"
+type = "float"
+comment = "Выкуплено (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "sold_items"
+alias = "sold_items"
+type = "float"
+comment = "Выкуплено (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "sold_sum"
+alias = "sold_sum"
+type = "float"
+comment = "Выкуплено (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "sold_cost"
+alias = "sold_cost"
+type = "float"
+comment = "Выкуплено (себестоимость с НДС)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "sold_rrp"
+alias = "sold_rrp"
+type = "float"
+comment = "Выкуплено (РРЦ)"
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "not_sold_orders"
+alias = "not_sold_orders"
+type = "float"
+comment = "Не выкуплено (заказы)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "not_sold_items"
+alias = "not_sold_items"
+type = "float"
+comment = "Не выкуплено (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "not_sold_sum"
+alias = "not_sold_sum"
+type = "float"
+comment = "Не выкуплено (сумма)"
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "returned_items"
+alias = "returned_items"
+type = "float"
+comment = "Возвращено (товары)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "returned_sum"
+alias = "returned_sum"
+type = "float"
+comment = "Возвращено (сумма)"
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".columns]]
+name = "returned_cost"
+alias = "returned_cost"
+type = "float"
+comment = "Возвращено (себестоимость с НДС)"
+
+
+
+
+[[reports_export_settings."ЭффективностьМультискладаНовый_PBI (TXT)".indexes]]
+use = false
+name = "default_idx"
+columns = ["mp_agreement"]
+unique = false

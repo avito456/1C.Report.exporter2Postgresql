@@ -1,0 +1,36 @@
+[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)"]
+use = true
+table_name = "mrt_shop__counters"
+schema_name = "marts"
+event_time = "period"
+
+[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+name = "Код магазина"
+alias = "wh_single_code"
+type = "string"
+
+[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+name = "Период, день"
+alias = "period"
+type = "date"
+
+[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+name = "ГУИДМагазина"
+alias = "wh_guid"
+type = "uuid"
+
+[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+name = "Количество посетителей"
+alias = "count_customers"
+type = "int"
+
+[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+name = "Количество чеков (по продавцам)"
+alias = "count_cheques"
+type = "int"
+
+[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".indexes]]
+use = false
+name = "default_idx"
+columns = ["Период, день", "Код магазина"]
+unique = false

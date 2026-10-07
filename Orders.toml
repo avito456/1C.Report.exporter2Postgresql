@@ -1,0 +1,238 @@
+# ---------------------------------------------------------
+# Состояние заказов
+#
+# Отчет УТ11: ЭффективностьМультискладаЯМПодВыгрузку
+#
+# ---------------------------------------------------------
+[reports_export_settings.Orders]
+use = true
+table_name = "rp_orders"
+schema_name = "marts"
+event_time = "date"
+comment = "Состояние Заказа. Отчет УТ11: ЭффективностьМультискладаЯМПодВыгрузку".
+
+[[reports_export_settings.Orders.columns]]
+name = "date"
+alias = "date"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "mp_agreement"
+alias = "mp_agreement"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "Mp agreement type"
+alias = "mp_agreement_type"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "Client order"
+alias = "client_order"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "Client order date"
+alias = "client_order_date"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "item_guid"
+alias = "item_guid"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "item_name"
+alias = "item_name"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "Wh single code"
+alias = "wh_single_code"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "wh_name"
+alias = "wh_name"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "Order"
+alias = "order"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "ordered_orders"
+alias = "ordered_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "ordered_items"
+alias = "ordered_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "ordered_sum"
+alias = "ordered_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "in_processing_orders"
+alias = "in_processing_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "in_processing_items"
+alias = "in_processing_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "in_processing_sum"
+alias = "in_processing_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "ready_orders"
+alias = "ready_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "ready_items"
+alias = "ready_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "ready_sum"
+alias = "ready_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancelled_orders"
+alias = "cancelled_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancelled_items"
+alias = "cancelled_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancelled_sum"
+alias = "cancelled_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancel_by_client_items"
+alias = "cancel_by_client_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancel_by_client_sum"
+alias = "cancel_by_client_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancel_out_of_stock_items"
+alias = "cancel_out_of_stock_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancel_out_of_stock_sum"
+alias = "cancel_out_of_stock_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancel_expired_items"
+alias = "cancel_expired_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "cancel_expired_sum"
+alias = "cancel_expired_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "on_way_orders"
+alias = "on_way_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "on_way_items"
+alias = "on_way_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "on_way_sum"
+alias = "on_way_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "sold_orders"
+alias = "sold_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "sold_items"
+alias = "sold_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "sold_sum"
+alias = "sold_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "sold_cost"
+alias = "sold_cost"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "sold_full_price"
+alias = "sold_full_price"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "not_sold_orders"
+alias = "not_sold_orders"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "not_sold_items"
+alias = "not_sold_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "not_sold_sum"
+alias = "not_sold_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "returned_items"
+alias = "returned_items"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "returned_sum"
+alias = "returned_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "returned_cost"
+alias = "returned_cost"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "total_sum"
+alias = "total_sum"
+type = "string"
+
+[[reports_export_settings.Orders.columns]]
+name = "total_cost"
+alias = "total_cost"
+type = "string"
+
+[[reports_export_settings.Orders.indexes]]
+use = false
+name = "default_idx"
+columns = ["date"]
+unique = false
