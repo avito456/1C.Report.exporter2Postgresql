@@ -70,6 +70,31 @@ def _column_type(series: pl.Series) -> str:
     return col_type
 
 
+_TRANSLIT = {
+    "а": "a", "б": "b", "в": "v", "г": "g", "д": "d", "е": "e", "ё": "yo", "ж": "zh",
+    "з": "z", "и": "i", "й": "y", "к": "k", "л": "l", "м": "m", "н": "n", "о": "o",
+    "п": "p", "р": "r", "с": "s", "т": "t", "у": "u", "ф": "f", "х": "kh", "ц": "ts",
+    "ч": "ch", "ш": "sh", "щ": "shch", "ъ": "", "ы": "y", "ь": "", "э": "e", "ю": "yu",
+    "я": "ya",
+}  # fmt: skip
+PG_NAME_MAX_LEN = 63
+
+
+def to_latin_identifier(text: str) -> str:
+    """Приводит название отчёта к имени таблицы: латиница, нижний регистр, snake_case.
+
+    «ЭффективностьМультискладаНовый_PBI (TXT)» -> «effektivnost_multisklada_novyy_pbi_txt».
+    Это транслитерация (перевести названия на английский без внешних сервисов нельзя).
+    """
+    # CamelCase -> слова: «МультискладаНовый» -> «Мультисклада_Новый»
+    text = re.sub(r"(?<=[a-zа-яё0-9])(?=[A-ZА-ЯЁ])", "_", text.strip())
+    latin = "".join(_TRANSLIT.get(ch, ch) for ch in text.lower())
+    name = re.sub(r"[^a-z0-9]+", "_", latin).strip("_")[:PG_NAME_MAX_LEN].strip("_")
+    if not name:
+        return "report"
+    return f"t_{name}" if name[0].isdigit() else name
+
+
 def _parse_dates(col: str, dtype: type[pl.Date] | type[pl.Datetime]) -> pl.Expr:
     """Разбирает текстовую колонку в дату/дату-время (форматы с временем и без)."""
     text = pl.col(col).cast(pl.Utf8, strict=False)
@@ -156,7 +181,7 @@ class ReportConfig(BaseModel):
         logger.info(f"📋 Автогенерация настроек для {name}")
         return cls(
             use=False,
-            table_name=f"{name}_table",
+            table_name=f"{to_latin_identifier(name)}_table",
             columns=generated_columns,
             indexes=[fake_index],
             event_time=event_time,  # Теперь всегда будет в TOML (даже если None)

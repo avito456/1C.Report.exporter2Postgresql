@@ -13,6 +13,7 @@ from app.settings.tables_settings import (
     infer_string_column_type,
     load_config,
     save_config,
+    to_latin_identifier,
 )
 
 FLAT_TOML = """use = true
@@ -136,6 +137,29 @@ class InferStringColumnTypeTest(unittest.TestCase):
         cfg = ReportConfig.from_dataset("rep", df)
 
         self.assertEqual([c.type for c in cfg.columns], ["Int64", "float64", "string"])
+
+
+class ToLatinIdentifierTest(unittest.TestCase):
+    def test_transliterates_and_splits_camel_case(self):
+        self.assertEqual(
+            to_latin_identifier("ЭффективностьМультискладаНовый_PBI (TXT)"),
+            "effektivnost_multisklada_novyy_pbi_txt",
+        )
+
+    def test_simple_names(self):
+        self.assertEqual(to_latin_identifier("Зарплата"), "zarplata")
+        self.assertEqual(to_latin_identifier("Щука Ёж"), "shchuka_yozh")
+        self.assertEqual(to_latin_identifier("Orders"), "orders")
+
+    def test_edge_cases(self):
+        self.assertEqual(to_latin_identifier("!!!"), "report")
+        self.assertEqual(to_latin_identifier("2026 план"), "t_2026_plan")
+        self.assertLessEqual(len(to_latin_identifier("Очень" * 30)), 63)
+
+    def test_from_dataset_table_name_is_latin(self):
+        cfg = ReportConfig.from_dataset("Аренда помещений", pl.DataFrame({"A": ["1"]}))
+
+        self.assertEqual(cfg.table_name, "arenda_pomeshcheniy_table")
 
 
 if __name__ == "__main__":
