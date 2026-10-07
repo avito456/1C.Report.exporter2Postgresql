@@ -15,6 +15,19 @@ dependencies = [
     "tomlkit>=0.14.0",
     "uvicorn>=0.40.0",
     "watchdog>=6.0.0",
-    "pyinstaller>=6.19.0",
     "cryptography>=46.0.5",
 ]
+
+[dependency-groups]
+dev = [
+    "pyinstaller>=6.19.0",
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
