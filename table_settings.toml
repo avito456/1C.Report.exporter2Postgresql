@@ -1,35 +1,34 @@
-[reports_export_settings.table_settings]
 use = false
 table_name = "table_settings_table"
 schema_name = "marts"
 event_time = "Период,День"
 
-[[reports_export_settings.table_settings.columns]]
+[[columns]]
 name = "КодМагазина"
 alias = "wh_single_code"
 type = "string"
 
-[[reports_export_settings.table_settings.columns]]
+[[columns]]
 name = "Период,День"
 alias = "period"
 type = "date"
 
-[[reports_export_settings.table_settings.columns]]
+[[columns]]
 name = "Гуидмагазина"
 alias = "wh_guid"
 type = "uuid"
 
-[[reports_export_settings.table_settings.columns]]
+[[columns]]
 name = "КоличествоПосетителей"
 alias = "count_customers"
 type = "int"
 
-[[reports_export_settings.table_settings.columns]]
+[[columns]]
 name = "КоличествоЧеков(ПоПродавцам)"
 alias = "count_cheques"
 type = "int"
 
-[[reports_export_settings.table_settings.indexes]]
+[[indexes]]
 use = false
 name = "default_idx"
 columns = ["КодМагазина"]

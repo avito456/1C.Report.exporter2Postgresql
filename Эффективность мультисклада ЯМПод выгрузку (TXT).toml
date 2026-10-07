@@ -1,311 +1,283 @@
-[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)"]
 use = true
 table_name = "rep_invoice__yamarket"
 schema_name = "marts"
 event_time = "date"
 comment = "Состояние Заказа. Отчет УТ11: ЭффективностьМультискладаЯМПодВыгрузку"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "date"
 alias = "date"
 type = "date"
 comment = "Дата Заказа"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "mp_agreement"
 alias = "mp_agreement"
 type = "string"
 comment = "Вид доставки"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "Mp agreement type"
 alias = "mp_agreement_type"
 type = "string"
 comment = "Вид доставки.Типы отношений с маркетплейсом (лд)"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "Client order"
 alias = "client_order"
 type = "string"
 comment = "Заказ клиента"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "Client order date"
 alias = "client_order_date"
 type = "date"
 comment = "Заказ клиента.Дата"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "item_guid"
 alias = "item_guid"
 type = "uuid"
 comment = "UUID Номенклатуры"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "item_name"
 alias = "item_name"
 type = "string"
 comment = "Номенклатура"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "Wh single code"
 alias = "wh_single_code"
 type = "string"
 comment = "Склад.Един код (Склады и магазины)"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "wh_name"
 alias = "wh_name"
 type = "int"
 comment = "Склад"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "Order"
 alias = "order"
 type = "int"
 comment = "Заказ клиента"
 
-
-
 #---Заказано-------------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "ordered_orders"
 alias = "ordered_orders"
 type = "int"
 comment = "Заказано: Количество заказов"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "ordered_items"
 alias = "ordered_items"
 type = "int"
 comment = "Заказано: Количество номенклатуры"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "ordered_sum"
 alias = "ordered_sum"
 type = "int"
 comment = "Заказано: Стоимость"
 
-
-
-
 #---В обработке----------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "in_processing_orders"
 alias = "in_processing_orders"
 type = "int"
 comment = "В обработке: Количество заказов"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "in_processing_items"
 alias = "in_processing_items"
 type = "int"
 comment = "В обработке:  Количество номенклатуры"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "in_processing_sum"
 alias = "in_processing_sum"
 type = "int"
 comment = "В обработке: Сумма"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "ready_orders"
 alias = "ready_orders"
 type = "int"
 comment = "В обработке: Количество заказов готовое к выдаче"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "ready_items"
 alias = "ready_items"
 type = "int"
 comment = "В обработке: Количество товаров готовое к выдаче"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "ready_sum"
 alias = "ready_sum"
 type = "int"
 comment = "В обработке: Сумма товаров готовое к выдаче"
 
-
-
-
 # ---Отменено------------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancelled_orders"
 alias = "cancelled_orders"
 type = "int"
 comment = "Отменено: Количество заказов"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancelled_items"
 alias = "cancelled_items"
 type = "int"
 comment = "Отменено: Количество номенклатуры"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancelled_sum"
 alias = "cancelled_sum"
 type = "int"
 comment = "Отменено: Стоимость"
 
-
-
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancel_by_client_items"
 alias = "cancel_by_client_items"
 type = "int"
 comment = "Отменено: (Причины отмен взятых в работу товаров) по просьбе клиента - товары"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancel_by_client_sum"
 alias = "cancel_by_client_sum"
 type = "int"
 comment = "Отменено: (Причины отмен взятых в работу товаров) по просьбе клиента - стоимость"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancel_out_of_stock_items"
 alias = "cancel_out_of_stock_items"
 type = "int"
 comment = "Отменено: (Причины отмен взятых в работу товаров) Нет в наличии - товары"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancel_out_of_stock_sum"
 alias = "cancel_out_of_stock_sum"
 type = "int"
 comment = "Отменено: (Причины отмен взятых в работу товаров) Нет в наличии - стоимость"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancel_expired_items"
 alias = "cancel_expired_items"
 type = "int"
 comment = "Отменено: (Причины отмен взятых в работу товаров) Нет в наличии - истек срок хранения товара"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "cancel_expired_sum"
 alias = "cancel_expired_sum"
 type = "int"
 comment = "Отменено: (Причины отмен взятых в работу товаров) Нет в наличии - истек срок хранения - Стоимость"
 
-
-
-
 # ---В пути--------------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "on_way_orders"
 alias = "on_way_orders"
 type = "int"
 comment = "В пути: Количество заказов"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "on_way_items"
 alias = "on_way_items"
 type = "int"
 comment = "В пути: Товары"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "on_way_sum"
 alias = "on_way_sum"
 type = "int"
 comment = "В пути: Стоимость"
 
-
-
-
 # ---Выкуплено-----------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "sold_orders"
 alias = "sold_orders"
 type = "int"
 comment = "Выкуплено: Количестао заказов"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "sold_items"
 alias = "sold_items"
 type = "int"
 comment = "Выкуплено: Количество"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "sold_sum"
 alias = "sold_sum"
 type = "int"
 comment = "Выкуплено: Стоимость"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "sold_cost"
 alias = "sold_cost"
 type = "int"
 comment = "Выкуплено: Себестоимость товаров выкуплено"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "sold_full_price"
 alias = "sold_full_price"
 type = "int"
 comment = "Выкуплено: Сумма товаров выкуплено без скидок"
 
-
-
-
 # ---Не выкуплено--------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "not_sold_orders"
 alias = "not_sold_orders"
 type = "int"
 comment = "Не выкуплено: Количество заказов"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "not_sold_items"
 alias = "not_sold_items"
 type = "int"
 comment = "Не выкуплено: Количество"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "not_sold_sum"
 alias = "not_sold_sum"
 type = "int"
 comment = "Не выкуплено: Стоимость"
 
-
-
 # ---Себестоимость товаров возвраты--------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "returned_items"
 alias = "returned_items"
 type = "int"
 comment = "Возвращено после выкупа: Количество"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "returned_sum"
 alias = "returned_sum"
 type = "int"
 comment = "Возвращено после выкупа: Стоимость"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "returned_cost"
 alias = "returned_cost"
 type = "int"
 comment = "Возвращено после выкупа: Себестоимость товаров возвраты"
 
-
-
-
 # ---ИТОГ----------------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "total_sum"
 alias = "total_sum"
 type = "int"
 comment = "ИТОГ: Сумма"
 
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".columns]]
+[[columns]]
 name = "total_cost"
 alias = "total_cost"
 type = "int"
 comment = "ИТОГ: Себестоимость"
 
-
-
-
 #---Индекс---------------------------------------------------------------------------
-[[reports_export_settings."Эффективность мультисклада ЯМПод выгрузку (TXT)".indexes]]
+[[indexes]]
 use = false
 name = "default_idx"
 columns = ["date"]

@@ -1,41 +1,40 @@
-[reports_export_settings."Зарплата"]
 use = true
 table_name = "int_rep__zp_festival"
 schema_name = "intermediate"
 event_time = "period_month"
 comment = "Аренда торговых площадей Фестиваль"
 
-[[reports_export_settings."Зарплата".columns]]
+[[columns]]
 name = "Дата"
 alias = "period_month"
 type = "date"
 comment = "Период месяц"
 
-[[reports_export_settings."Зарплата".columns]]
+[[columns]]
 name = "Подразделение"
 alias = "wh_name"
 type = "string"
 comment = "Подразделение"
 
-[[reports_export_settings."Зарплата".columns]]
+[[columns]]
 name = "ЕдиныйКод"
 alias = "wh_single_code"
 type = "string"
 comment = "Един код"
 
-[[reports_export_settings."Зарплата".columns]]
+[[columns]]
 name = "СтатьяЗатрат"
 alias = "cost_item"
 type = "string"
 comment = "Статья затрат"
 
-[[reports_export_settings."Зарплата".columns]]
+[[columns]]
 name = "Сумма"
 alias = "cost_amount"
 type = "int"
 comment = "Сумма затрат"
 
-[[reports_export_settings."Зарплата".indexes]]
+[[indexes]]
 use = true
 name = "zp_unique_idx"
 columns = ["period_month", "wh_single_code", "cost_item"]

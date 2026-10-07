@@ -1,65 +1,64 @@
-[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию"]
 use = false
 table_name = "СВЕРКА_ТоварыПереданныеНаКомиссию_table"
 schema_name = "marts"
 event_time = ""
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "stock_date"
 alias = "stock_date"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "wh_guid"
 alias = "wh_guid"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "item_guid"
 alias = "item_guid"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "starting_balance"
 alias = "starting_balance"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "debet"
 alias = "debet"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "credit"
 alias = "credit"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "ending_balance"
 alias = "ending_balance"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "Номенклатура"
 alias = "номенклатура"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".columns]]
+[[columns]]
 name = "Склад"
 alias = "склад"
 type = "string"
 comment = ""
 
-[[reports_export_settings."СВЕРКА_ТоварыПереданныеНаКомиссию".indexes]]
+[[indexes]]
 use = false
 name = "default_idx"
 columns = ["stock_date"]

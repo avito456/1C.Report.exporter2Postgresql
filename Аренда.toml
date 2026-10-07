@@ -1,41 +1,40 @@
-[reports_export_settings."Аренда"]
 use = true
 table_name = "int_rep__arenda_festival"
 schema_name = "intermediate"
 event_time = "period_month"
 comment = ""
 
-[[reports_export_settings."Аренда".columns]]
+[[columns]]
 name = "Месяц"
 alias = "period_month"
 type = "date"
 comment = "Период месяц"
 
-[[reports_export_settings."Аренда".columns]]
+[[columns]]
 name = "Сумма"
 alias = "cost_amount"
 type = "int"
 comment = "Сумма"
 
-[[reports_export_settings."Аренда".columns]]
+[[columns]]
 name = "Подразделение"
 alias = "wh_name"
 type = "string"
 comment = "Подразделение"
 
-[[reports_export_settings."Аренда".columns]]
+[[columns]]
 name = "ЕдиныйКод"
 alias = "wh_single_code"
 type = "string"
 comment = "Эдин код"
 
-[[reports_export_settings."Аренда".columns]]
+[[columns]]
 name = "Статья"
 alias = "cost_item"
 type = "string"
 comment = "Статья затрат"
 
-[[reports_export_settings."Аренда".indexes]]
+[[indexes]]
 use = true
 name = "arenda_unique_idx"
 columns = ["period_month", "wh_single_code", "cost_item"]

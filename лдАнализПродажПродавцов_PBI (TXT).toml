@@ -1,41 +1,40 @@
-[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)"]
 use = false
 table_name = "лдАнализПродажПродавцов_PBI (TXT)_table"
 schema_name = "marts"
 event_time = ""
 comment = ""
 
-[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+[[columns]]
 name = "Код магазина"
 alias = "код_магазина"
 type = "string"
 comment = ""
 
-[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+[[columns]]
 name = "Период, день"
 alias = "период,_день"
 type = "string"
 comment = ""
 
-[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+[[columns]]
 name = "ГУИДМагазина"
 alias = "гуидмагазина"
 type = "string"
 comment = ""
 
-[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+[[columns]]
 name = "Количество посетителей"
 alias = "количество_посетителей"
 type = "string"
 comment = ""
 
-[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".columns]]
+[[columns]]
 name = "Количество чеков (по продавцам)"
 alias = "количество_чеков_(по_продавцам)"
 type = "string"
 comment = ""
 
-[[reports_export_settings."лдАнализПродажПродавцов_PBI (TXT)".indexes]]
+[[indexes]]
 use = false
 name = "default_idx"
 columns = ["код_магазина"]
