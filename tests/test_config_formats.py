@@ -10,6 +10,7 @@ from app.settings import env
 from app.settings.tables_settings import (
     Column,
     ReportConfig,
+    infer_string_column_type,
     load_config,
     save_config,
 )
@@ -102,6 +103,39 @@ class FromDatasetTest(unittest.TestCase):
             self.assertEqual(reparsed["columns"][0]["alias"], "a")
         finally:
             path.unlink(missing_ok=True)
+
+
+class InferStringColumnTypeTest(unittest.TestCase):
+    def _infer(self, values):
+        return infer_string_column_type(pl.Series(values, dtype=pl.String))
+
+    def test_integers(self):
+        self.assertEqual(self._infer(["1", "-15", "+7", "0", None]), "Int64")
+
+    def test_integers_with_thousand_separators(self):
+        self.assertEqual(self._infer(["1 234", "12\xa0345 678", "5"]), "Int64")
+
+    def test_decimals_with_comma_or_dot(self):
+        self.assertEqual(self._infer(["1,5", "2", "-0,25"]), "float64")
+        self.assertEqual(self._infer(["1.5", "1 234,56"]), "float64")
+
+    def test_codes_with_leading_zeros_stay_string(self):
+        self.assertEqual(self._infer(["007", "123"]), "string")
+
+    def test_mixed_and_text_stay_string(self):
+        self.assertEqual(self._infer(["12", "abc"]), "string")
+        self.assertEqual(self._infer(["01.02.2026", "03.04.2026"]), "string")
+        self.assertEqual(self._infer(["", None]), "string")
+
+    def test_too_big_integer_becomes_float(self):
+        self.assertEqual(self._infer(["99999999999999999999"]), "float64")
+
+    def test_from_dataset_uses_inferred_types(self):
+        df = pl.DataFrame({"Кол": ["1", "2"], "Сумма": ["1 000,50", "2"], "Имя": ["a", "b"]})
+
+        cfg = ReportConfig.from_dataset("rep", df)
+
+        self.assertEqual([c.type for c in cfg.columns], ["Int64", "float64", "string"])
 
 
 if __name__ == "__main__":

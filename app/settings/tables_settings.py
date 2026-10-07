@@ -34,6 +34,42 @@ def infer_polars_type(dtype: pl.DataType) -> str:
     return "string"
 
 
+# Числа в выгрузках 1С: «1 234 567,89», «-15», «0,5». Целая часть без ведущих нулей
+# (иначе это код вроде «007», который должен остаться строкой). \s в Unicode-режиме
+# regex-движка polars покрывает и неразрывный пробел (0xA0) — разделитель разрядов.
+_INT_PART = r"(?:0|[1-9]\d*|[1-9]\d{0,2}(?:\s\d{3})+)"
+INT_RE = rf"^[+-]?{_INT_PART}$"
+FLOAT_RE = rf"^[+-]?{_INT_PART}[.,]\d+$"
+
+
+def infer_string_column_type(series: pl.Series) -> str:
+    """Определяет тип текстовой колонки по значениям: Int64, float64 или string.
+
+    Пустые значения игнорируются. Колонка считается числовой, только если ВСЕ
+    непустые значения — числа. Целые, не помещающиеся в Int64, считаются дробными.
+    """
+    values = series.drop_nulls().str.strip_chars()
+    values = values.filter(values.str.len_chars() > 0)
+    if values.is_empty():
+        return "string"
+
+    is_int = values.str.contains(INT_RE)
+    if is_int.all():
+        digits = values.str.replace_all(r"\s", "")
+        return "Int64" if digits.cast(pl.Int64, strict=False).null_count() == 0 else "float64"
+    if (is_int | values.str.contains(FLOAT_RE)).all():
+        return "float64"
+    return "string"
+
+
+def _column_type(series: pl.Series) -> str:
+    """Тип колонки для TOML: по dtype, а для текстовых колонок — по содержимому."""
+    col_type = infer_polars_type(series.dtype)
+    if col_type == "string" and series.dtype == pl.String:
+        return infer_string_column_type(series)
+    return col_type
+
+
 def _parse_dates(col: str, dtype: type[pl.Date] | type[pl.Datetime]) -> pl.Expr:
     """Разбирает текстовую колонку в дату/дату-время (форматы с временем и без)."""
     text = pl.col(col).cast(pl.Utf8, strict=False)
@@ -83,7 +119,7 @@ class ReportConfig(BaseModel):
         generated_columns = [
             Column(
                 name=col_name,  # Оригинальное имя колонки из заголовков DataFrame
-                type=infer_polars_type(df[col_name].dtype),
+                type=_column_type(df[col_name]),
                 alias=col_name.lower().replace(" ", "_").replace(".", "_"),
             )
             for col_name in df.columns  # df.columns - это заголовки таблицы
