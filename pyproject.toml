@@ -1,6 +1,6 @@
 [project]
 name = "dvh-from-txt"
-version = "2.26.0"
+version = "2.27.0"
 description = "Сервис отправки данных выгрузки отчетов 1С в TXT --> Postgresql"
 readme = "README.md"
 requires-python = ">=3.12"
