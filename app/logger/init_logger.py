@@ -24,11 +24,11 @@ def init_logger(config):
         ),
         level=config.LOG_FILE_LEVEL.upper(),
         colorize=True,
-        enqueue=True  # Безопасно для PyInstaller
+        enqueue=True,  # Безопасно для PyInstaller
     )
 
     # 2. Файловый логгер — только если LOG_FILE_DIR явно задан
-    log_dir = (config.LOG_FILE_DIR or '').strip()
+    log_dir = (config.LOG_FILE_DIR or "").strip()
     if not log_dir:
         return
 
@@ -45,7 +45,7 @@ def init_logger(config):
                 compression="zip",
                 level=config.LOG_FILE_LEVEL.upper(),
                 format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:<8} | {name}:{function}:{line} | {message}",
-                enqueue=True  # Важно для PyInstaller!
+                enqueue=True,  # Важно для PyInstaller!
             )
             logger.info(f"📝 Логи пишутся в: {log_path}")
         else:
@@ -53,4 +53,3 @@ def init_logger(config):
 
     except Exception as e:
         logger.warning(f"⚠️  Ошибка настройки файла логов: {e}")
-

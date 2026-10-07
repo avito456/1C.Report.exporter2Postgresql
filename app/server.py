@@ -73,6 +73,7 @@ def _is_blocked(path: str) -> bool:
         logger.warning(f"File already in processing: {path}")
         return True
 
+
 # Очередь путей к файлам. Наполняется из потоков watchdog и fallback-сканера
 # через call_soon_threadsafe, разбирается задачей FileProcessor в event loop.
 file_queue: asyncio.Queue[str] = asyncio.Queue()
@@ -273,11 +274,7 @@ class FileProcessor:
             with status_lock:
                 monitor_status["processed_files_status"][Path(path).name] = datetime.now()
 
-            logger.info(
-                f"\n{'-' * 100}\n"
-                f"File processed successfully: {path}"
-                f"\n{'-' * 100}"
-            )
+            logger.info(f"\n{'-' * 100}\nFile processed successfully: {path}\n{'-' * 100}")
         except Exception as exc:
             table_name = ts.get("table_name") if isinstance(ts, dict) else None
             columns_list = loader.columns if loader is not None else None

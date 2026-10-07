@@ -69,9 +69,9 @@ uv pip install polars>=0.20.0
 df.fill_null()
 
 # Правильно:
-df.fill_null(0)        # для чисел
-df.fill_null("")       # для строк
-df.fill_null(None)     # для null
+df.fill_null(0)  # для чисел
+df.fill_null("")  # для строк
+df.fill_null(None)  # для null
 # Или просто не вызывать fill_null(), если null значения допустимы
 ```
 

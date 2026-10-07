@@ -513,8 +513,7 @@ class AsyncDatasetToPostgres:
 
         if self.event_time not in self.columns:
             logger.warning(
-                f"Column [event_time] = '{self.event_time}' is not among loaded columns, "
-                f"skip period deletion"
+                f"Column [event_time] = '{self.event_time}' is not among loaded columns, skip period deletion"
             )
             return 0
 

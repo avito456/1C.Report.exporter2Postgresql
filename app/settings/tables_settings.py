@@ -17,7 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from app.settings import env
 
 # Дата/время в текстовом виде: dd.MM.yyyy [HH:mm:ss]
-DATE_STRING_RE = re.compile(r'^\d{2}\.\d{2}\.\d{4}(?:\s+\d{1,2}:\d{2}:\d{2})?$')
+DATE_STRING_RE = re.compile(r"^\d{2}\.\d{2}\.\d{4}(?:\s+\d{1,2}:\d{2}:\d{2})?$")
 DATETIME_TYPE = "datetime64[ns]"
 
 
@@ -60,18 +60,18 @@ class Index(BaseModel):
 
 class ReportConfig(BaseModel):
     """Плоские настройки экспорта одного отчёта: 1 файл TOML = 1 отчёт."""
-    model_config = ConfigDict(extra='allow')
+
+    model_config = ConfigDict(extra="allow")
     use: bool = False
     table_name: str = "report01"
     schema_name: str = "marts"
-    event_time: str | None = None   # alias колонки с датой операции
-    comment: str | None = None      # комментарий таблицы для PostgreSQL
+    event_time: str | None = None  # alias колонки с датой операции
+    comment: str | None = None  # комментарий таблицы для PostgreSQL
     columns: list[Column] = Field(default_factory=list)
     indexes: list[Index] = Field(default_factory=list)
 
     @classmethod
-    def from_dataset(cls, name: str, df: pl.DataFrame,
-                     event_time: str | None = None) -> 'ReportConfig':
+    def from_dataset(cls, name: str, df: pl.DataFrame, event_time: str | None = None) -> "ReportConfig":
         """Получает настройки экспорта таблицы из df.
         Заголовки берутся из df.columns (заголовки DataFrame), а не из первой строки данных."""
 
@@ -84,7 +84,7 @@ class ReportConfig(BaseModel):
             Column(
                 name=col_name,  # Оригинальное имя колонки из заголовков DataFrame
                 type=infer_polars_type(df[col_name].dtype),
-                alias=col_name.lower().replace(' ', '_').replace('.', '_')
+                alias=col_name.lower().replace(" ", "_").replace(".", "_"),
             )
             for col_name in df.columns  # df.columns - это заголовки таблицы
         ]
@@ -104,11 +104,7 @@ class ReportConfig(BaseModel):
                     continue
                 try:
                     sample = df[col.name].drop_nulls().head(20).to_list()
-                    if sample and all(
-                        DATE_STRING_RE.match(str(v).strip())
-                        for v in sample
-                        if v is not None
-                    ):
+                    if sample and all(DATE_STRING_RE.match(str(v).strip()) for v in sample if v is not None):
                         col.type = DATETIME_TYPE
                         event_time = col.alias
                         logger.info(f"📅 Дата-колонка найдена по образцу: {event_time}")
@@ -117,16 +113,17 @@ class ReportConfig(BaseModel):
                     continue
 
         # Используем alias для индекса (имена колонок в БД)
-        fake_index = Index(name='default_idx',
-                           columns=[generated_columns[0].alias] if generated_columns else ['column1'])
+        fake_index = Index(
+            name="default_idx", columns=[generated_columns[0].alias] if generated_columns else ["column1"]
+        )
 
-        logger.info(f'📋 Автогенерация настроек для {name}')
+        logger.info(f"📋 Автогенерация настроек для {name}")
         return cls(
             use=False,
             table_name=f"{name}_table",
             columns=generated_columns,
             indexes=[fake_index],
-            event_time=event_time  # Теперь всегда будет в TOML (даже если None)
+            event_time=event_time,  # Теперь всегда будет в TOML (даже если None)
         )
 
 
@@ -154,7 +151,7 @@ def save_config(config_table: BaseModel, toml_file: str):
         # tomllib не умеет dump — пишем через tomlkit
         tomlkit.dump(config_dict, f, sort_keys=False)
 
-    logger.info(f'🎯 Сохранен TOML: {path}')
+    logger.info(f"🎯 Сохранен TOML: {path}")
 
 
 def load_config(
@@ -169,12 +166,12 @@ def load_config(
         if df is None:
             logger.error("❌ DataFrame нужен при отсутствии TOML!")
             return None
-        logger.warning(f'⚠️  TOML не найден: {path_toml_file}. Генерируем из df...')
+        logger.warning(f"⚠️  TOML не найден: {path_toml_file}. Генерируем из df...")
         config = ReportConfig.from_dataset(Path(path_toml_file).stem, df, event_col)
         save_config(config, path_toml_file)
         return config
 
-    with open(path_toml_file, 'rb') as f:  # tomllib требует bytes
+    with open(path_toml_file, "rb") as f:  # tomllib требует bytes
         toml_data = tomllib.load(f)
 
     return ReportConfig.model_validate(toml_data)
@@ -190,20 +187,19 @@ def apply_schema_to_dataset(df: pl.DataFrame, report_settings: ReportConfig) -> 
 
     # Маппинг настроенных колонок: name -> db_name (alias при наличии, иначе name)
     name_to_db_name: dict[str, str] = {}
-    for col in ts.get('columns', []):
-        name = col.get('name')
+    for col in ts.get("columns", []):
+        name = col.get("name")
         if not name:
             logger.warning("⚠️ Запись в [columns] без поля name пропущена")
             continue
-        alias = col.get('alias')
+        alias = col.get("alias")
         name_to_db_name[name] = alias if alias else name
 
     # Настроенные колонки, отсутствующие в файле -> warning (неточность)
     for name, db_name in name_to_db_name.items():
         if name not in original_columns:
             logger.warning(
-                f"⚠️ Неточность: колонка '{name}' (alias '{db_name}') "
-                f"не найдена в исходном файле — пропущена"
+                f"⚠️ Неточность: колонка '{name}' (alias '{db_name}') не найдена в исходном файле — пропущена"
             )
 
     # Переименовываем только существующие колонки файла
@@ -221,29 +217,31 @@ def apply_schema_to_dataset(df: pl.DataFrame, report_settings: ReportConfig) -> 
     df = df.select(kept)
 
     # Приведение типов только для оставшихся (kept) колонок
-    for col_config in ts.get('columns', []):
-        name = col_config.get('name')
-        alias = col_config.get('alias')
+    for col_config in ts.get("columns", []):
+        name = col_config.get("name")
+        alias = col_config.get("alias")
         col_name = alias if alias else name
-        col_type = col_config.get('type')
+        col_type = col_config.get("type")
         if not name or col_name not in df.columns:
             continue
         try:
             if col_type in ("Int64", "int", "integer"):
                 df = df.with_columns(
-                    pl.col(col_name).cast(pl.Utf8)
-                    .str.replace_all(r'[\s\xA0]+', '')
-                    .str.replace(',', '.')
-                    .str.replace(r'\.\d+$', '')
+                    pl.col(col_name)
+                    .cast(pl.Utf8)
+                    .str.replace_all(r"[\s\xA0]+", "")
+                    .str.replace(",", ".")
+                    .str.replace(r"\.\d+$", "")
                     .cast(pl.Int64, strict=False)
                     .fill_null(0)
                 )
 
             elif col_type in ("float64", "float"):
                 df = df.with_columns(
-                    pl.col(col_name).cast(pl.Utf8)
-                    .str.replace_all(r'[\s\xA0]+', '')
-                    .str.replace(',', '.')
+                    pl.col(col_name)
+                    .cast(pl.Utf8)
+                    .str.replace_all(r"[\s\xA0]+", "")
+                    .str.replace(",", ".")
                     .cast(pl.Float64, strict=False)
                     .fill_null(0.0)
                 )
@@ -259,9 +257,7 @@ def apply_schema_to_dataset(df: pl.DataFrame, report_settings: ReportConfig) -> 
             # ✅ UUID
             elif col_type in ("UUID", "uuid"):
                 # Очистка строк и валидация UUID
-                df = df.with_columns(
-                    pl.col(col_name).cast(pl.Utf8).str.strip_chars().str.replace('"', '')
-                )
+                df = df.with_columns(pl.col(col_name).cast(pl.Utf8).str.strip_chars().str.replace('"', ""))
 
         except Exception as e:
             logger.warning(f"⚠️ Тип {col_type} для {col_name}: {e}")

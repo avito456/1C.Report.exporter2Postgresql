@@ -15,15 +15,17 @@ def make_uploader(df: pl.DataFrame) -> AsyncDatasetToPostgres:
 
 class InferSchemaTest(unittest.TestCase):
     def test_maps_polars_dtypes_to_postgres(self):
-        df = pl.DataFrame({
-            "i": [1, 2],
-            "f": [1.5, 2.5],
-            "b": [True, False],
-            "d": [datetime(2026, 1, 1), datetime(2026, 1, 2)],
-            "t": ["a", "b"],
-            "u": ["123e4567-e89b-12d3-a456-426614174000"] * 2,
-            "mixed": ["123e4567-e89b-12d3-a456-426614174000", "not-uuid"],
-        })
+        df = pl.DataFrame(
+            {
+                "i": [1, 2],
+                "f": [1.5, 2.5],
+                "b": [True, False],
+                "d": [datetime(2026, 1, 1), datetime(2026, 1, 2)],
+                "t": ["a", "b"],
+                "u": ["123e4567-e89b-12d3-a456-426614174000"] * 2,
+                "mixed": ["123e4567-e89b-12d3-a456-426614174000", "not-uuid"],
+            }
+        )
 
         schema = make_uploader(df)._infer_schema()
 

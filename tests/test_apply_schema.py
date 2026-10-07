@@ -20,15 +20,19 @@ class ApplySchemaToDatasetTest(unittest.TestCase):
         )
 
     def test_drops_extra_columns_and_renames_aliases(self):
-        df = pl.DataFrame({
-            "A": ["1", "2"],
-            "B": ["x", "y"],
-            "Extra": ["9", "9"],
-        })
-        config = self._make_config([
-            Column(name="A", alias="a_col", type="Int64"),
-            Column(name="B", alias="b_col", type="string"),
-        ])
+        df = pl.DataFrame(
+            {
+                "A": ["1", "2"],
+                "B": ["x", "y"],
+                "Extra": ["9", "9"],
+            }
+        )
+        config = self._make_config(
+            [
+                Column(name="A", alias="a_col", type="Int64"),
+                Column(name="B", alias="b_col", type="string"),
+            ]
+        )
 
         result = apply_schema_to_dataset(df, config)
 
@@ -38,10 +42,12 @@ class ApplySchemaToDatasetTest(unittest.TestCase):
 
     def test_missing_configured_column_is_skipped(self):
         df = pl.DataFrame({"A": ["1"]})
-        config = self._make_config([
-            Column(name="A", alias="a_col", type="Int64"),
-            Column(name="Missing", alias="missing_col", type="string"),
-        ])
+        config = self._make_config(
+            [
+                Column(name="A", alias="a_col", type="Int64"),
+                Column(name="Missing", alias="missing_col", type="string"),
+            ]
+        )
 
         result = apply_schema_to_dataset(df, config)
 
@@ -49,23 +55,29 @@ class ApplySchemaToDatasetTest(unittest.TestCase):
 
     def test_column_without_alias_keeps_name(self):
         df = pl.DataFrame({"A": ["1"]})
-        config = self._make_config([
-            Column(name="A", type="string"),
-        ])
+        config = self._make_config(
+            [
+                Column(name="A", type="string"),
+            ]
+        )
 
         result = apply_schema_to_dataset(df, config)
 
         self.assertEqual(result.columns, ["A"])
 
     def test_datetime_and_date_columns_are_parsed(self):
-        df = pl.DataFrame({
-            "T": ["01.02.2026 10:30:00", "03.04.2026"],
-            "D": ["01.02.2026 10:30:00", "03.04.2026"],
-        })
-        config = self._make_config([
-            Column(name="T", type="datetime64[ns]"),
-            Column(name="D", type="date"),
-        ])
+        df = pl.DataFrame(
+            {
+                "T": ["01.02.2026 10:30:00", "03.04.2026"],
+                "D": ["01.02.2026 10:30:00", "03.04.2026"],
+            }
+        )
+        config = self._make_config(
+            [
+                Column(name="T", type="datetime64[ns]"),
+                Column(name="D", type="date"),
+            ]
+        )
 
         result = apply_schema_to_dataset(df, config)
 

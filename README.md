@@ -43,8 +43,20 @@ unique = true
 Имя файла `.toml` и его содержимое связаны формально: `load_config` читает
 файл по имени исходника, плоский формат секции не содержит.
 
-## Тесты
+## Архитектура
+
+```
+watchdog (app/server.py) → asyncio-очередь → разбор TXT (app/parsers/report_loader.py)
+  → настройки TOML (app/settings/tables_settings.py) → загрузка (app/db/db_uploader.py, COPY)
+```
+
+Каждый модуль начинается с docstring, описывающего его назначение.
+
+## Разработка
 
 ```bash
-.venv\Scripts\python.exe -B -m unittest discover -s tests -v
+uv sync --group dev                      # зависимости, включая pytest, ruff, pyinstaller
+uv run pytest                            # тесты
+uv run ruff check . && uv run ruff format .   # линтер и форматирование
+uv run python compile.py                 # сборка exe (PyInstaller)
 ```

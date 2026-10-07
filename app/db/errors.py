@@ -93,10 +93,7 @@ def build_load_error(
 ) -> ReportLoadError:
     """Переводит любое исключение в человекочитаемый ReportLoadError."""
     columns = columns or []
-    base_hint = (
-        "Проверьте формат данных в исходном файле и типы колонок "
-        "в TOML-конфигурации / в таблице."
-    )
+    base_hint = "Проверьте формат данных в исходном файле и типы колонок в TOML-конфигурации / в таблице."
 
     # 1. Неверный тип аргумента:
     #    "invalid input for query argument $N [in element #M of executemany() sequence]:

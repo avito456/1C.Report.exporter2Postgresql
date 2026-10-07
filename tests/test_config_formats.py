@@ -14,7 +14,7 @@ from app.settings.tables_settings import (
     save_config,
 )
 
-FLAT_TOML = '''use = true
+FLAT_TOML = """use = true
 table_name = "t1"
 schema_name = "marts"
 event_time = "d"
@@ -31,7 +31,7 @@ use = false
 name = "i"
 columns = ["a"]
 unique = false
-'''
+"""
 
 
 class ParseConfigTest(unittest.TestCase):
