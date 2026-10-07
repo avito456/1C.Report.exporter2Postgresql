@@ -1,3 +1,8 @@
+"""Настройка loguru: вывод в консоль и (опционально) в ротируемый файл app.log.
+
+Файловый лог включается, только если задан LOG_FILE_DIR.
+"""
+
 import sys
 from pathlib import Path
 

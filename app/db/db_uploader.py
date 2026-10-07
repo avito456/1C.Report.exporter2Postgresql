@@ -1,3 +1,14 @@
+"""Загрузка polars.DataFrame в PostgreSQL через asyncpg.
+
+AsyncDatasetToPostgres выводит схему таблицы из DataFrame, создаёт таблицу и
+недостающие колонки, приводит типы существующих колонок, удаляет строки за период
+отчёта (`event_time`), заливает данные через COPY и создаёт индексы CONCURRENTLY.
+Весь DDL выполняется с lock_timeout, чтобы не зависать на блокировках BI-клиентов.
+
+Также содержит вспомогательные функции: экранирование идентификаторов, учёт
+63-байтового усечения имён колонок в PostgreSQL и проверку границ периода.
+"""
+
 import re
 from collections.abc import AsyncIterator, Iterable
 from contextlib import asynccontextmanager

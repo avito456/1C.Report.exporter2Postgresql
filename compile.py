@@ -1,9 +1,13 @@
+"""Сборка exe через PyInstaller: версия берётся из pyproject.toml и пишется в app/_version.py.
+
+Запуск: `uv run --group dev python compile.py`.
+"""
+
 import logging
+import tomllib
 from pathlib import Path
 
 import PyInstaller.__main__
-import tomllib
-
 
 pyproject_path = Path("./pyproject.toml")
 with pyproject_path.open("rb") as file:

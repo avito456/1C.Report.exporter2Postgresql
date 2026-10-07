@@ -1,3 +1,5 @@
+"""Тесты вывода схемы таблицы из DataFrame и идемпотентности create_table (без БД)."""
+
 import asyncio
 import unittest
 from datetime import datetime

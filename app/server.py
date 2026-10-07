@@ -1,3 +1,11 @@
+"""Файловый монитор и HTTP-эндпоинты статуса (FastAPI).
+
+PollingObserver (watchdog) и фоновый сканер ставят новые/изменённые .txt-файлы
+в asyncio-очередь; FileProcessor по одному разбирает файл, находит одноимённый
+TOML с настройками и загружает данные в БД. Эндпоинты: /status и /health.
+Защита от повторной обработки — files_in_processing с выселением «зависших» записей.
+"""
+
 import asyncio
 import os
 import time

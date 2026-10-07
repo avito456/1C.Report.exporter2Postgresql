@@ -1,3 +1,10 @@
+"""Настройки экспорта отчёта: один TOML-файл = один отчёт (имя совпадает с именем .txt).
+
+ReportConfig описывает таблицу, колонки (name -> alias, тип, комментарий), индексы
+и колонку периода `event_time`. load_config читает TOML или автогенерирует его из
+DataFrame, apply_schema_to_dataset переименовывает колонки и приводит типы.
+"""
+
 import re
 import tomllib
 from pathlib import Path

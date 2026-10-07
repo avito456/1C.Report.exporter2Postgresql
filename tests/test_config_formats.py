@@ -1,3 +1,5 @@
+"""Тесты плоского формата TOML: разбор, load_config, автогенерация и save_config."""
+
 import tomllib
 import unittest
 import uuid

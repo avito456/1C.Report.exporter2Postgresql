@@ -1,3 +1,5 @@
+"""Тесты проверки периода отчёта и разбора дат из шапки."""
+
 import unittest
 from datetime import datetime
 

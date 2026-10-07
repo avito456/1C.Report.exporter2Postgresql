@@ -1,3 +1,8 @@
+"""Точка входа: инициализирует логирование и запускает веб-сервер с файловым монитором.
+
+Запуск: `python -m app`. Сборка в exe: `compile.py`.
+"""
+
 import asyncio
 
 from loguru import logger

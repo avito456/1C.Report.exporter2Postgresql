@@ -1,3 +1,5 @@
+"""Тесты apply_schema_to_dataset: переименование, отбрасывание колонок, приведение типов."""
+
 import unittest
 
 import polars as pl

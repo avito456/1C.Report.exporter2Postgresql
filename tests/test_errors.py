@@ -1,3 +1,5 @@
+"""Тесты перевода ошибок загрузки в человекочитаемый вид."""
+
 import unittest
 
 from app.db.errors import build_load_error
