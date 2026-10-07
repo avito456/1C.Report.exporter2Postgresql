@@ -1,12 +1,10 @@
 import asyncio
 import os
-import queue
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import Dict
 
 import uvicorn
 from fastapi import FastAPI
@@ -15,12 +13,10 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
 from app.db import db_uploader
-from app.db.errors import ReportLoadError, build_load_error
+from app.db.errors import build_load_error
 from app.parsers import report_loader
 from app.settings import tables_settings
-from app.settings.env import Config
-
-config = Config()
+from app.settings.env import config
 
 monitor_status = {
     "is_running": True,
@@ -34,11 +30,19 @@ shutdown_event = Event()
 # Путь -> время начала обработки. Запись со слишком старым временем
 # считается «зависшей» и выселяется, чтобы большой/блокируемый файл
 # не «заглох» в обработке и не молча игнорировал последующие изменения.
-files_in_processing: Dict[str, float] = {}
+files_in_processing: dict[str, float] = {}
 processing_lock = Lock()
+DB_PARAMS = {
+    "host": config.DB_HOST,
+    "port": config.DB_PORT,
+    "database": config.DB_NAME,
+    "user": config.DB_USER,
+    "password": config.DB_PWD,
+}
 PROCESS_STALE_SECONDS = 1800.0
 READ_TIMEOUT_SECONDS = 300.0
 FALLBACK_SCAN_INTERVAL = 5.0
+FALLBACK_MAX_AGE_SECONDS = 10.0  # старше — файл считается давно обработанным
 
 
 def _is_blocked(path: str) -> bool:
@@ -61,74 +65,68 @@ def _is_blocked(path: str) -> bool:
         logger.warning(f"File already in processing: {path}")
         return True
 
-_fallback_last_seen: Dict[str, float] = {}
+# Очередь путей к файлам. Наполняется из потоков watchdog и fallback-сканера
+# через call_soon_threadsafe, разбирается задачей FileProcessor в event loop.
+file_queue: asyncio.Queue[str] = asyncio.Queue()
+_loop: asyncio.AbstractEventLoop | None = None
 
 
-def _fallback_scan(report_dir: str):
+def _enqueue(path: str, reason: str) -> None:
+    """Потокобезопасно ставит файл в очередь, если он ещё не обрабатывается."""
+    if _loop is None or _is_blocked(path):
+        return
+    logger.info(f"{reason}: {path}")
+    _loop.call_soon_threadsafe(file_queue.put_nowait, path)
+
+
+_fallback_last_seen: dict[str, float] = {}
+
+
+def _fallback_scan(report_dir: str) -> None:
     """Фоновый сканер: ловит модификации, пропущенные PollingObserver."""
     try:
-        dir_path = Path(report_dir)
-        if not dir_path.exists():
-            return
-
         now = time.time()
-        for entry in dir_path.iterdir():
-            if not entry.is_file():
-                continue
-            if not entry.name.lower().endswith(".txt"):
+        for entry in Path(report_dir).iterdir():
+            if not (entry.is_file() and entry.name.lower().endswith(".txt")):
                 continue
 
             try:
                 mtime = entry.stat().st_mtime
-            except (OSError, PermissionError):
+            except OSError:
                 continue
 
             path_str = str(entry)
-
             prev = _fallback_last_seen.get(path_str)
             if prev is not None and abs(mtime - prev) < 0.1:
                 continue
             _fallback_last_seen[path_str] = mtime
 
-            if now - mtime > 10.0:
-                continue
-
-            if _is_blocked(path_str):
-                continue
-
-            logger.info(f"Fallback scan: file modified: {path_str}")
-            try:
-                file_queue.put_nowait(path_str)
-            except queue.Full:
-                logger.warning("File queue is full")
+            if now - mtime <= FALLBACK_MAX_AGE_SECONDS:
+                _enqueue(path_str, "Fallback scan: file modified")
     except Exception as exc:
         logger.debug(f"Fallback scan error: {exc}")
 
 
-def _start_fallback_scanner(report_dir: str):
+def _start_fallback_scanner(report_dir: str) -> Thread:
     """Запускает daemon-поток периодического сканирования директории."""
-    def _loop():
+
+    def _loop_scan():
         while not shutdown_event.is_set():
             _fallback_scan(report_dir)
             shutdown_event.wait(FALLBACK_SCAN_INTERVAL)
 
-    t = Thread(target=_loop, daemon=True, name="fallback-scanner")
-    t.start()
-    return t
+    thread = Thread(target=_loop_scan, daemon=True, name="fallback-scanner")
+    thread.start()
+    return thread
 
 
-file_queue: queue.Queue[str] = queue.Queue()
 DATETIME_FORMATS = ("%Y-%m-%d %H:%M:%S", "%d.%m.%Y %H:%M:%S")
 DATE_ONLY_FORMATS = ("%Y-%m-%d", "%d.%m.%Y")
 DATE_FORMATS = DATETIME_FORMATS + DATE_ONLY_FORMATS
 
 
-def parse_header_date(raw_value: str | None) -> datetime | None:
-    parsed_date, _ = parse_header_date_with_type(raw_value)
-    return parsed_date
-
-
 def parse_header_date_with_type(raw_value: str | None) -> tuple[datetime | None, bool]:
+    """Разбирает дату из шапки отчёта; второй элемент — была ли в ней указана время."""
     if not raw_value:
         return None, False
 
@@ -163,56 +161,31 @@ def complete_end_period(
 
 
 class FileHandler(FileSystemEventHandler):
-    def on_created(self, event):
+    """Реагирует на создание и изменение .txt-файлов отчётов."""
+
+    def _handle(self, event, reason: str) -> None:
         if event.is_directory or shutdown_event.is_set():
             return
+        if event.src_path.lower().endswith(".txt"):
+            _enqueue(event.src_path, reason)
 
-        if not event.src_path.lower().endswith(".txt"):
-            return
-
-        logger.debug(f"on_created: {event.src_path}")
-        if _is_blocked(event.src_path):
-            return
-
-        logger.info(f"New file: {event.src_path}")
-        try:
-            file_queue.put_nowait(event.src_path)
-        except queue.Full:
-            logger.warning("File queue is full")
+    def on_created(self, event):
+        self._handle(event, "New file")
 
     def on_modified(self, event):
-        if event.is_directory or shutdown_event.is_set():
-            return
-
-        if not event.src_path.lower().endswith(".txt"):
-            return
-
-        logger.debug(f"on_modified: {event.src_path}")
-        if _is_blocked(event.src_path):
-            return
-
-        logger.info(f"\n{'=' * 100}\nFile modified: {event.src_path}\n{'=' * 100}\n")
-        try:
-            file_queue.put_nowait(event.src_path)
-        except queue.Full:
-            logger.warning("File queue is full")
+        self._handle(event, "File modified")
 
 
 class FileProcessor:
     async def process_files(self):
         while not shutdown_event.is_set():
-            path = None
+            path = await file_queue.get()
             try:
-                loop = asyncio.get_running_loop()
-                path = await loop.run_in_executor(None, lambda: file_queue.get(timeout=0.1))
                 await self._process_single_file(path)
-            except queue.Empty:
-                continue
             except Exception as exc:
                 logger.error(f"Queue processing error: {exc}")
             finally:
-                if path is not None:
-                    file_queue.task_done()
+                file_queue.task_done()
 
     async def _process_single_file(self, path: str):
         if shutdown_event.is_set():
@@ -238,7 +211,7 @@ class FileProcessor:
             )
 
             start_period, start_period_is_datetime = parse_header_date_with_type(header.get("start_period"))
-            end_period = parse_header_date(header.get("end_period"))
+            end_period, _ = parse_header_date_with_type(header.get("end_period"))
 
             toml_file, _ = os.path.splitext(os.path.basename(path))
             report_settings = tables_settings.load_config(toml_file=f"{toml_file}.toml", df=df)
@@ -263,14 +236,6 @@ class FileProcessor:
                 report_settings=report_settings,
             )
 
-            db_params = {
-                "host": config.DB_HOST,
-                "port": config.DB_PORT,
-                "database": config.DB_NAME,
-                "user": config.DB_USER,
-                "password": config.DB_PWD,
-            }
-
             column_comments = {
                 col["alias"]: col["comment"]
                 for col in ts.get("columns", [])
@@ -278,7 +243,7 @@ class FileProcessor:
             }
 
             loader = db_uploader.AsyncDatasetToPostgres(
-                db_params=db_params,
+                db_params=DB_PARAMS,
                 dataframe=df,
                 table_name=ts["table_name"],
                 schema=ts["schema_name"],
@@ -355,6 +320,9 @@ async def lifespan(app: FastAPI):
         monitor_status["is_running"] = False
         yield
         return
+
+    global _loop
+    _loop = asyncio.get_running_loop()
 
     handler = FileHandler()
     observer = PollingObserver()
