@@ -246,12 +246,7 @@ class FileProcessor:
                 logger.error(f"Could not load TOML config for {toml_file}")
                 return
 
-            table_config = report_settings.reports_export_settings.get(toml_file)
-            if table_config is None:
-                logger.error(f"Missing TOML section for {toml_file}")
-                return
-
-            ts = table_config.model_dump(exclude_none=True)
+            ts = report_settings.model_dump(exclude_none=True)
 
             if not ts.get("use", False):
                 logger.warning(
@@ -266,7 +261,6 @@ class FileProcessor:
             df = tables_settings.apply_schema_to_dataset(
                 df=df,
                 report_settings=report_settings,
-                toml_file=toml_file,
             )
 
             db_params = {
