@@ -24,7 +24,7 @@ from app.db import db_uploader
 from app.db.errors import build_load_error
 from app.parsers import report_loader
 from app.settings import tables_settings
-from app.settings.env import config
+from app.settings.env import config, get_version
 
 monitor_status = {
     "is_running": True,
@@ -47,6 +47,7 @@ DB_PARAMS = {
     "user": config.DB_USER,
     "password": config.DB_PWD,
 }
+APP_VERSION = get_version()
 PROCESS_STALE_SECONDS = 1800.0
 READ_TIMEOUT_SECONDS = 300.0
 FALLBACK_SCAN_INTERVAL = 5.0
@@ -304,7 +305,9 @@ class FileProcessor:
             with status_lock:
                 monitor_status["processed_files_status"][Path(path).name] = datetime.now()
 
-            logger.info(f"\n{'-' * 100}\nFile processed successfully: {path}\n{'-' * 100}")
+            logger.info(
+                f"\n{'-' * 100}\nFile processed successfully: {path} (version {APP_VERSION})\n{'-' * 100}"
+            )
         except Exception as exc:
             table_name = ts.get("table_name") if isinstance(ts, dict) else None
             columns_list = loader.columns if loader is not None else None
