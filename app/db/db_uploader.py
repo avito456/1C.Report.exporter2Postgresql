@@ -420,7 +420,7 @@ class AsyncDatasetToPostgres:
                 logger.debug(f"Batch {start}-{start + len(chunk)} loaded")
 
         actual_count = await self._count_rows()
-        logger.info(f"Loaded {loaded}/{total_rows}, actual rows in DB: {actual_count}")
+        logger.info(f"Loaded {loaded}/{total_rows}, actual rows in DB: {actual_count} --> [{self.qualified_table}]")
         return {"planned": total_rows, "loaded": loaded, "actual": actual_count}
 
     async def _copy_chunk(self, conn: asyncpg.Connection, chunk: pl.DataFrame) -> int:
