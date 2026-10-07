@@ -1,7 +1,6 @@
 """Пользовательские исключения и перевод ошибок БД в человекочитаемый вид."""
 
 import re
-from typing import List, Optional
 
 import asyncpg
 
@@ -17,13 +16,13 @@ class ReportLoadError(Exception):
         self,
         message: str,
         *,
-        file_path: Optional[str] = None,
-        table_name: Optional[str] = None,
-        column: Optional[str] = None,
-        expected: Optional[str] = None,
-        received: Optional[str] = None,
-        row_number: Optional[int] = None,
-        hint: Optional[str] = None,
+        file_path: str | None = None,
+        table_name: str | None = None,
+        column: str | None = None,
+        expected: str | None = None,
+        received: str | None = None,
+        row_number: int | None = None,
+        hint: str | None = None,
     ):
         super().__init__(message)
         self.message = message
@@ -66,55 +65,31 @@ _ARG_PATTERN = re.compile(
 
 
 def _parse_executemany_message(message: str):
-    """Разбирает сообщение asyncpg про неверный аргумент executemany.
+    """Разбирает сообщение asyncpg про неверный аргумент запроса.
 
-    Возвращает (position_1_based, element_index, received, expected) или None.
+    Возвращает (position_1_based, element_index | None, received, expected) или None.
     """
     match = _ARG_PATTERN.search(message)
     if not match:
         return None
     arg_pos = int(match.group(1))
-    element = int(match.group(2)) if match.group(2) else 0
+    element = int(match.group(2)) if match.group(2) else None
     received = (match.group(3) or "").strip()
     expected = (match.group(4) or "").strip()
     return arg_pos, element, received, expected
 
 
-def _describe_value(value) -> str:
-    if value is None:
-        return "NULL"
-    if isinstance(value, float):
-        return repr(value)
-    if isinstance(value, (int, bool)):
-        return str(value)
-    return repr(value)
-
-
-def _column_for_arg(arg_pos: int, columns: List[str]) -> Optional[str]:
+def _column_for_arg(arg_pos: int, columns: list[str]) -> str | None:
     """Возвращает имя колонки по 1-индексной позиции аргумента (без id)."""
-    if arg_pos < 1:
-        return None
-    if 1 <= arg_pos <= len(columns):
-        return columns[arg_pos - 1]
-    return None
-
-
-_COLUMN_TYPE_HINT = {
-    "TEXT": "строковый (символьный) столбец — файл должен содержать текст",
-    "UUID": "UUID-столбец — значение должно быть в формате UUID",
-    "DATE": "дата в формате ДД.ММ.ГГГГ или ГГГГ-ММ-ДД",
-    "TIMESTAMP": "дата-время в формате ДД.ММ.ГГГГ ЧЧ:ММ:СС",
-    "BIGINT": "целочисленный столбец",
-    "DOUBLE PRECISION": "числовой столбец (дробное число)",
-}
+    return columns[arg_pos - 1] if 1 <= arg_pos <= len(columns) else None
 
 
 def build_load_error(
     exc: Exception,
     *,
-    file_path: Optional[str] = None,
-    table_name: Optional[str] = None,
-    columns: Optional[List[str]] = None,
+    file_path: str | None = None,
+    table_name: str | None = None,
+    columns: list[str] | None = None,
 ) -> ReportLoadError:
     """Переводит любое исключение в человекочитаемый ReportLoadError."""
     columns = columns or []
@@ -123,15 +98,15 @@ def build_load_error(
         "в TOML-конфигурации / в таблице."
     )
 
-    # 1. Типичная ошибка неверного типа аргумента в executemany:
-    #    "invalid input for query argument $N ... (expected str, got float)"
+    # 1. Неверный тип аргумента:
+    #    "invalid input for query argument $N [in element #M of executemany() sequence]:
+    #     1.0 (expected str, got float)"
     parsed = _parse_executemany_message(str(exc))
     if parsed:
-        arg_pos, element, received, _expected = parsed
-        column = _column_for_arg(arg_pos, columns)
+        arg_pos, element, received, expected = parsed
         row_number = element + 1 if element is not None else None
         msg = (
-            f"несоответствие типа данных при вставке строки"
+            "несоответствие типа данных при вставке строки"
             + (f" ~#{row_number}" if row_number else "")
             + f": значение {received} не подходит для типа колонки."
         )
@@ -139,8 +114,8 @@ def build_load_error(
             msg,
             file_path=file_path,
             table_name=table_name,
-            column=column,
-            expected=_expected or None,
+            column=_column_for_arg(arg_pos, columns),
+            expected=expected or None,
             received=received or None,
             row_number=row_number,
             hint=base_hint,
