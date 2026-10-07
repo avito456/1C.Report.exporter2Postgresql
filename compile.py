@@ -14,7 +14,7 @@ with pyproject_path.open("rb") as file:
     data = tomllib.load(file)
 
 VERSION = data["project"]["version"]
-PROGRAM_NAME = data["project"]["name"]
+PROGRAM_NAME = "report-exporter"  # имя exe и каталогов сборки (совпадает с командой uv run report-exporter)
 
 logging.warning("\n" * 5)
 logging.warning("-" * 100)
