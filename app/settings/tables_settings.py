@@ -1,11 +1,9 @@
 import tomllib  # Python 3.11+
 from pathlib import Path
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field, ConfigDict
 import polars as pl
 from loguru import logger
-import json  # для дампа pydantic в dict
-import uuid
 from app.settings import env
 
 
@@ -23,19 +21,20 @@ class Index(BaseModel):
     unique: bool = False
 
 
-class SettingsTableReport(BaseModel):
+class ReportConfig(BaseModel):
+    """Плоские настройки экспорта одного отчёта: 1 файл TOML = 1 отчёт."""
     model_config = ConfigDict(extra='allow')
     use: bool = False
     table_name: str = "report01"
     schema_name: str = "marts"
-    event_time: Optional[str] = 'алиас колонки с датой операции'   # Колонка с датой операции
-    comment: Optional[str] = None   # Комментарий/описание таблицы для PostgreSQL
+    event_time: Optional[str] = None   # alias колонки с датой операции
+    comment: Optional[str] = None      # комментарий таблицы для PostgreSQL
     columns: List[Column] = Field(default_factory=list)
     indexes: List[Index] = Field(default_factory=list)
 
     @classmethod
     def from_dataset(cls, name: str, df: pl.DataFrame,
-                     event_time: Optional[str] = None) -> 'SettingsTableReport':
+                     event_time: Optional[str] = None) -> 'ReportConfig':
         """Получает настройки экспорта таблицы из df.
         Заголовки берутся из df.columns (заголовки DataFrame), а не из первой строки данных."""
 
@@ -63,7 +62,7 @@ class SettingsTableReport(BaseModel):
             )
             for col_name in df.columns  # df.columns - это заголовки таблицы
         ]
-        
+
         # Если event_time не указан, ищем первую колонку с типом datetime
         if event_time is None:
             for col in generated_columns:
@@ -107,14 +106,37 @@ class SettingsTableReport(BaseModel):
         )
 
 
-class Config(BaseModel):
+class LegacyConfig(BaseModel):
+    """Устаревший формат с секцией [reports_export_settings."имя"].
+    Оставлен только для чтения существующих файлов."""
     model_config = ConfigDict(extra='allow')
-    reports_export_settings: Dict[str, SettingsTableReport] = Field(default_factory=dict)
+    reports_export_settings: Dict[str, ReportConfig] = Field(default_factory=dict)
 
-    @classmethod
-    def from_dataset(cls, name: str, dataset: pl.DataFrame, event_col: Optional[str] = None) -> 'Config':
-        report = SettingsTableReport.from_dataset(name, dataset, event_col)
-        return cls(reports_export_settings={name: report})
+
+def parse_config(data: dict, stem: str) -> ReportConfig | None:
+    """Разбирает TOML-данные: плоский формат или legacy-обёртку."""
+    if "reports_export_settings" not in data:
+        return ReportConfig.model_validate(data)
+
+    legacy = LegacyConfig.model_validate(data)
+    sections = legacy.reports_export_settings
+    if not sections:
+        logger.error(f"❌ Legacy TOML: нет секций reports_export_settings (ожидалась '{stem}')")
+        return None
+
+    if stem in sections:
+        extras = [k for k in sections if k != stem]
+        if extras:
+            logger.warning(f"⚠️ Legacy TOML: лишние секции {extras} в файле '{stem}.toml' — проигнорированы")
+        report = sections[stem]
+    else:
+        key = next(iter(sections))
+        logger.warning(
+            f"⚠️ Legacy TOML: ключ секции '{key}' не совпадает с именем файла '{stem}.toml' — используется '{key}'"
+        )
+        report = sections[key]
+
+    return report
 
 
 def save_config(config_table: BaseModel, toml_file: str):
@@ -124,7 +146,7 @@ def save_config(config_table: BaseModel, toml_file: str):
 
     # Pydantic -> dict -> TOML
     config_dict = config_table.model_dump(exclude_none=False)
-    
+
     # Заменяем None на пустую строку для совместимости с TOML
     def replace_none(obj):
         if isinstance(obj, dict):
@@ -134,7 +156,7 @@ def save_config(config_table: BaseModel, toml_file: str):
         elif obj is None:
             return ""
         return obj
-    
+
     config_dict = replace_none(config_dict)
 
     with open(path, "w", encoding="utf-8") as f:
@@ -145,8 +167,8 @@ def save_config(config_table: BaseModel, toml_file: str):
     logger.info(f'🎯 Сохранен TOML: {path}')
 
 
-def load_config(toml_file: str | Path, df: Optional[pl.DataFrame] = None, event_col: Optional[str] = None) -> Config | None:
-    """Загружает конфигурацию из TOML"""
+def load_config(toml_file: str | Path, df: Optional[pl.DataFrame] = None, event_col: Optional[str] = None) -> ReportConfig | None:
+    """Загружает конфигурацию из TOML (плоский или legacy-формат)."""
     path_toml_file = env.get_project_root() / Path(toml_file)
 
     if not path_toml_file.exists():
@@ -154,22 +176,22 @@ def load_config(toml_file: str | Path, df: Optional[pl.DataFrame] = None, event_
             logger.error("❌ DataFrame нужен при отсутствии TOML!")
             return None
         logger.warning(f'⚠️  TOML не найден: {path_toml_file}. Генерируем из df...')
-        config = Config.from_dataset(Path(path_toml_file).stem, df, event_col)
+        config = ReportConfig.from_dataset(Path(path_toml_file).stem, df, event_col)
         save_config(config, path_toml_file)
         return config
 
     with open(path_toml_file, 'rb') as f:  # tomllib требует bytes
         toml_data = tomllib.load(f)
 
-    return Config.model_validate(toml_data)
+    return parse_config(toml_data, stem=path_toml_file.stem)
 
 
-def apply_schema_to_dataset(df: pl.DataFrame, report_settings: SettingsTableReport, toml_file) -> pl.DataFrame:
+def apply_schema_to_dataset(df: pl.DataFrame, report_settings: ReportConfig) -> pl.DataFrame:
     """Применяет схему к DataFrame: переименовывает name->alias, кастует типы
     и отбрасывает колонки, не описанные в TOML."""
     df = df.clone()
 
-    ts = report_settings.reports_export_settings[toml_file].model_dump(exclude_none=True)
+    ts = report_settings.model_dump(exclude_none=True)
     original_columns = list(df.columns)
 
     # Маппинг настроенных колонок: name -> db_name (alias при наличии, иначе name)
@@ -279,12 +301,3 @@ def apply_schema_to_dataset(df: pl.DataFrame, report_settings: SettingsTableRepo
             logger.warning(f"⚠️ Тип {col_type} для {col_name}: {e}")
 
     return df
-
-
-def process_dataset_with_schema(df: pl.DataFrame, config_table: Config, report_name: str) -> pl.DataFrame:
-    """Обработать датасет по схеме из конфига"""
-    if report_name not in config_table.reports_export_settings:
-        logger.error(f"❌ Отчет '{report_name}' отсутствует")
-        return df
-
-    return apply_schema_to_dataset(df, config_table.reports_export_settings[report_name])

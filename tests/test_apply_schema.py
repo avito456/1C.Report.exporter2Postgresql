@@ -4,20 +4,18 @@ import polars as pl
 
 from app.settings.tables_settings import (
     Column,
-    Config,
-    SettingsTableReport,
+    ReportConfig,
     apply_schema_to_dataset,
 )
 
 
 class ApplySchemaToDatasetTest(unittest.TestCase):
     def _make_config(self, columns):
-        report = SettingsTableReport(
+        return ReportConfig(
             use=True,
             table_name="report01",
             columns=columns,
         )
-        return Config(reports_export_settings={"report01": report})
 
     def test_drops_extra_columns_and_renames_aliases(self):
         df = pl.DataFrame({
@@ -30,7 +28,7 @@ class ApplySchemaToDatasetTest(unittest.TestCase):
             Column(name="B", alias="b_col", type="string"),
         ])
 
-        result = apply_schema_to_dataset(df, config, "report01")
+        result = apply_schema_to_dataset(df, config)
 
         self.assertEqual(result.columns, ["a_col", "b_col"])
         self.assertEqual(result["a_col"].to_list(), [1, 2])
@@ -43,7 +41,7 @@ class ApplySchemaToDatasetTest(unittest.TestCase):
             Column(name="Missing", alias="missing_col", type="string"),
         ])
 
-        result = apply_schema_to_dataset(df, config, "report01")
+        result = apply_schema_to_dataset(df, config)
 
         self.assertEqual(result.columns, ["a_col"])
 
@@ -53,7 +51,7 @@ class ApplySchemaToDatasetTest(unittest.TestCase):
             Column(name="A", type="string"),
         ])
 
-        result = apply_schema_to_dataset(df, config, "report01")
+        result = apply_schema_to_dataset(df, config)
 
         self.assertEqual(result.columns, ["A"])
 
