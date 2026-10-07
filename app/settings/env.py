@@ -1,20 +1,23 @@
-from pathlib import Path
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict, model_validator
-from typing import List
-from dotenv import load_dotenv
-from loguru import logger
-import os
 import base64
+import os
+import sys
+import tomllib
+from pathlib import Path
+
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from dotenv import load_dotenv
+from loguru import logger
+from pydantic import ConfigDict, model_validator
+from pydantic_settings import BaseSettings
+
+# Ключ, из которого выводится ключ шифрования DB_PWD (обфускация, не защита).
+PROTECT_PASSWORD = "protect_me_1c_service"
 
 
 def get_project_root() -> Path:
     """Находит корень проекта"""
-    import sys
-
     if getattr(sys, 'frozen', False):
         return Path(sys.executable).parent
 
@@ -26,8 +29,6 @@ def get_project_root() -> Path:
 
 
 def get_version() -> str:
-    import sys
-
     if getattr(sys, 'frozen', False):
         try:
             from app._version import __version__
@@ -42,7 +43,6 @@ def get_version() -> str:
 
     for candidate in candidates:
         try:
-            import tomllib
             data = tomllib.loads(candidate.read_text(encoding="utf-8"))
             version = data.get("project", {}).get("version", "")
             if version:
@@ -59,7 +59,7 @@ def get_version() -> str:
     return "unknown"
 
 
-def generate_key_from_password(password: str, salt: bytes = None) -> tuple[bytes, bytes]:
+def generate_key_from_password(password: str, salt: bytes | None = None) -> tuple[bytes, bytes]:
     if salt is None:
         salt = os.urandom(16)
     kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt, iterations=100000)
@@ -67,7 +67,7 @@ def generate_key_from_password(password: str, salt: bytes = None) -> tuple[bytes
     return key, salt
 
 
-def encrypt_password(password: str, password_protect: str = "protect_me_1c_service") -> tuple[str, str]:
+def encrypt_password(password: str, password_protect: str = PROTECT_PASSWORD) -> tuple[str, str]:
     salt = os.urandom(16)
     key, _ = generate_key_from_password(password_protect, salt)
     f = Fernet(key)
@@ -77,7 +77,7 @@ def encrypt_password(password: str, password_protect: str = "protect_me_1c_servi
     return encrypted_b64, salt_b64
 
 
-def decrypt_password(encrypted_pwd: str, salt_b64: str, password_protect: str = "protect_me_1c_service") -> str:
+def decrypt_password(encrypted_pwd: str, salt_b64: str, password_protect: str = PROTECT_PASSWORD) -> str:
     salt = base64.urlsafe_b64decode(salt_b64)
     key, _ = generate_key_from_password(password_protect, salt)
     f = Fernet(key)
@@ -89,8 +89,6 @@ def secure_db_password(dotenv_path: Path) -> None:
     """Если DB_PWD открыт - шифрует его"""
     if not dotenv_path.exists():
         return
-    
-    protect_password = "protect_me_1c_service"
     
     lines = dotenv_path.read_text(encoding='utf-8').splitlines()
     env_content = {}
@@ -106,7 +104,7 @@ def secure_db_password(dotenv_path: Path) -> None:
         # Если пароль короткий (открытый) - шифруем
         if len(current_pwd) < 100:  
             logger.warning("🔐 Обнаружен открытый DB_PWD! Шифруем...")
-            encrypted_pwd, salt_b64 = encrypt_password(current_pwd, protect_password)
+            encrypted_pwd, salt_b64 = encrypt_password(current_pwd)
             
             # Заменяем в .env: DB_PWD=encrypted|salt
             new_lines = []
@@ -117,7 +115,7 @@ def secure_db_password(dotenv_path: Path) -> None:
                     new_lines.append(line)
             
             dotenv_path.write_text('\n'.join(new_lines) + '\n', encoding='utf-8')
-            logger.info(f"✅ DB_PWD зашифрован в .env")
+            logger.info("✅ DB_PWD зашифрован в .env")
 
 
 # Инициализация
@@ -130,7 +128,6 @@ load_dotenv(dotenv_path=dotenv_path)
 class Config(BaseSettings):
     APP_PATH: str = str(project_root)
     REPORT_DIR: str = r'//16x-1cfs01.one.local/1CExchange$/DWH_DATALENS'
-    ALLOWED_EXTENSIONS: List[str] = [".txt", ".csv", ".xlsx", ".pdf"]
     
     DB_HOST: str = "16X-DL-MASTER01.one.local"
     DB_PORT: int = 5432
@@ -154,12 +151,10 @@ class Config(BaseSettings):
     @model_validator(mode='after')
     def decrypt_db_password(self):
         """DB_PWD в .env зашифрован → config.DB_PWD расшифрован"""
-        protect_password = "protect_me_1c_service"
-        
         if '|' in self.DB_PWD and len(self.DB_PWD) > 100:
             try:
                 encrypted_pwd, salt_b64 = self.DB_PWD.split('|', 1)
-                decrypted = decrypt_password(encrypted_pwd, salt_b64, protect_password)
+                decrypted = decrypt_password(encrypted_pwd, salt_b64)
                 self.DB_PWD = decrypted  # ✅ Расшифрованный пароль!
                 logger.debug("✅ DB_PWD расшифрован")
             except Exception as e:
@@ -170,11 +165,7 @@ class Config(BaseSettings):
         
         return self
 
-    @property
-    def db_password(self) -> str:
-        return self.DB_PWD
-
 
 config = Config()
 logger.info(f"✅ Конфиг: {config.DB_HOST}:{config.DB_PORT}/{config.DB_NAME}")
-logger.info(f"DB_PWD: {'готов' if config.db_password else 'отсутствует'}")
+logger.info(f"DB_PWD: {'готов' if config.DB_PWD else 'отсутствует'}")

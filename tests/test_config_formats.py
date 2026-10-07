@@ -1,7 +1,6 @@
 import tomllib
 import unittest
 import uuid
-from pathlib import Path
 
 import polars as pl
 

@@ -2,7 +2,7 @@ import io
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 import polars as pl
 from loguru import logger
@@ -50,7 +50,7 @@ class ReportHeaderParser:
     )
 
     @classmethod
-    def extract_period_from_header(cls, header_text: str) -> Dict[str, str]:
+    def extract_period_from_header(cls, header_text: str) -> dict[str, str]:
         """
         Извлекает период или дату из шапки отчета, применяя паттерны по очереди.
         Значения возвращаются как в отчёте (с временем или только дата).
@@ -152,7 +152,7 @@ class ReportHeaderParser:
 
     @classmethod
     def load_inventory_csv(cls, file_path: str | Path, encoding: str = 'utf-8-sig') -> tuple[
-        pl.DataFrame, Dict[str, Any]]:
+        pl.DataFrame, dict[str, Any]]:
         file_path = Path(file_path)
         logger.info(f"📂 Загрузка и парсинг: {file_path.name}")
 
@@ -172,7 +172,9 @@ class ReportHeaderParser:
         df = cls.load_body_to_dataframe(body_text)
 
         logger.info(f"✅ DataFrame: {len(df)}×{len(df.columns)}")
-        logger.info(f"✅ Период: {header_info.get('start_period', 'N/A')} → {header_info.get('end_period', 'N/A')}")
+        logger.info(
+            f"✅ Период: {header_info.get('start_period', 'N/A')} → {header_info.get('end_period', 'N/A')}"
+        )
 
         return df, header_info
 
@@ -194,7 +196,7 @@ class ReportHeaderParser:
         last_error: Exception | None = None
         for attempt in range(1, retries + 1):
             try:
-                with open(file_path, 'r', encoding=encoding, errors="ignore") as f:
+                with open(file_path, encoding=encoding, errors="ignore") as f:
                     return f.read()
             except (PermissionError, OSError) as exc:
                 last_error = exc
@@ -207,7 +209,7 @@ class ReportHeaderParser:
         raise last_error if last_error else RuntimeError(f"Не удалось прочитать файл: {file_path}")
 
     @classmethod
-    def _parse_header_lines(cls, text: str) -> Dict[str, Any]:
+    def _parse_header_lines(cls, text: str) -> dict[str, Any]:
         """
         Парсинг шапки используя HEADER_PATTERN - извлекает период (start_period/end_period).
         

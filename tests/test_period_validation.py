@@ -1,5 +1,5 @@
-from datetime import datetime
 import unittest
+from datetime import datetime
 
 from app.db.db_uploader import (
     missing_required_period_bounds,
