@@ -80,10 +80,35 @@ file_queue: asyncio.Queue[str] = asyncio.Queue()
 _loop: asyncio.AbstractEventLoop | None = None
 
 
+# Дедупликация: один и тот же файл приходит от watchdog и от fallback-сканера.
+# _pending — пути, уже стоящие в очереди; _processed_mtime — mtime файла на момент
+# начала его последней обработки (то же состояние файла повторно не грузим).
+_pending: set[str] = set()
+_processed_mtime: dict[str, float] = {}
+
+
+def _mtime(path: str) -> float | None:
+    try:
+        return os.stat(path).st_mtime
+    except OSError:
+        return None
+
+
 def _enqueue(path: str, reason: str) -> None:
-    """Потокобезопасно ставит файл в очередь, если он ещё не обрабатывается."""
+    """Потокобезопасно ставит файл в очередь, пропуская дубли событий."""
     if _loop is None or _is_blocked(path):
         return
+
+    mtime = _mtime(path)
+    with processing_lock:
+        if path in _pending:
+            logger.debug(f"Already queued, skip: {path}")
+            return
+        if mtime is not None and _processed_mtime.get(path) == mtime:
+            logger.debug(f"Already processed this version, skip: {path}")
+            return
+        _pending.add(path)
+
     logger.info(f"{reason}: {path}")
     _loop.call_soon_threadsafe(file_queue.put_nowait, path)
 
@@ -189,6 +214,8 @@ class FileProcessor:
     async def process_files(self):
         while not shutdown_event.is_set():
             path = await file_queue.get()
+            with processing_lock:
+                _pending.discard(path)
             try:
                 await self._process_single_file(path)
             except Exception as exc:
@@ -200,8 +227,11 @@ class FileProcessor:
         if shutdown_event.is_set():
             return
 
+        mtime = _mtime(path)
         with processing_lock:
             files_in_processing[path] = time.time()
+            if mtime is not None:
+                _processed_mtime[path] = mtime
 
         with status_lock:
             monitor_status["processed_files"] += 1
