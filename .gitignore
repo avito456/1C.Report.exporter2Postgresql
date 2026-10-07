@@ -139,3 +139,5 @@ Thumbs.db
 
 ./reports
 REPORT
+# Archives
+*.7z
