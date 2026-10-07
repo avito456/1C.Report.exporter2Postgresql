@@ -35,7 +35,7 @@ python -c "import polars as pl; print(f'Polars {pl.__version__} установл
 
 ```bash
 # Обычный запуск
-python -m app
+uv run report-exporter
 
 # Или через uvicorn напрямую
 uvicorn app.server:app --reload

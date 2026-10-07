@@ -1,6 +1,6 @@
 """Точка входа: инициализирует логирование и запускает веб-сервер с файловым монитором.
 
-Запуск: `python -m app`. Сборка в exe: `compile.py`.
+Запуск: `uv run report-exporter` (или `python -m app`). Сборка в exe: `compile.py`.
 """
 
 import asyncio
@@ -11,10 +11,9 @@ from app.logger.init_logger import init_logger
 from app.server import run_server
 from app.settings.env import config, get_version
 
-init_logger(config)
 
-
-if __name__ == "__main__":
+def main() -> None:
+    init_logger(config)
     try:
         logger.info(f"Application version: {get_version()}")
         asyncio.run(run_server())
@@ -22,3 +21,7 @@ if __name__ == "__main__":
         logger.info("Программа остановлена пользователем")
     except Exception:
         logger.exception("Критическая ошибка")
+
+
+if __name__ == "__main__":
+    main()

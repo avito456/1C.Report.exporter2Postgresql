@@ -52,6 +52,13 @@ watchdog (app/server.py) → asyncio-очередь → разбор TXT (app/pa
 
 Каждый модуль начинается с docstring, описывающего его назначение.
 
+## Запуск
+
+```bash
+uv sync
+uv run report-exporter    # эквивалент python -m app
+```
+
 ## Разработка
 
 ```bash

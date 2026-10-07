@@ -224,7 +224,7 @@ wheels = [
 [[package]]
 name = "dvh-from-txt"
 version = "2.24.16"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "asyncpg" },
     { name = "cryptography" },
