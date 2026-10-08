@@ -1,0 +1,65 @@
+use = true
+table_name = "__tovary_vputi_table"
+schema_name = "report"
+event_time = "stock_date"
+comment = ""
+
+[[columns]]
+name = "stock_date"
+alias = "stock_date"
+type = "datetime64[ns]"
+comment = ""
+
+[[columns]]
+name = "ws_name"
+alias = "ws_name"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "item_name"
+alias = "item_name"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "wh_uuid"
+alias = "wh_uuid"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "item_guid"
+alias = "item_guid"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "starting_balance"
+alias = "starting_balance"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "debet"
+alias = "debet"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "credit"
+alias = "credit"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "ending_balance"
+alias = "ending_balance"
+type = "float64"
+comment = ""
+
+[[indexes]]
+use = false
+name = "default_idx"
+columns = ["stock_date"]
+unique = false

@@ -1,0 +1,71 @@
+use = true
+table_name = "mrt_sales_last_month_items__expected"
+schema_name = "marts"
+event_time = "sale_date"
+comment = ""
+
+[[columns]]
+name = "sale_date"
+alias = "sale_date"
+type = "datetime64[ns]"
+comment = ""
+
+[[columns]]
+name = "wh_name"
+alias = "wh_name"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "item_name"
+alias = "item_name"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "wh_guid"
+alias = "wh_guid"
+type = "string"
+comment = ""
+
+[[columns]]
+name = "sale_amount"
+alias = "sale_amount"
+type = "Int64"
+comment = ""
+
+[[columns]]
+name = "sale_turnover_rub"
+alias = "sale_turnover_rub"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "sale_revenue_rub_not_nds"
+alias = "sale_revenue_rub_not_nds"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "sale_cost_rub"
+alias = "sale_cost_rub"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "sale_gross_income_rub"
+alias = "sale_gross_income_rub"
+type = "float64"
+comment = ""
+
+[[columns]]
+name = "k"
+alias = "k"
+type = "string"
+comment = ""
+
+[[indexes]]
+use = false
+name = "default_idx"
+columns = ["sale_date"]
+unique = false
