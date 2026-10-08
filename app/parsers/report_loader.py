@@ -129,6 +129,11 @@ class ReportHeaderParser:
         if len(data_lines) < 2:
             raise ValueError(f"❌ Недостаточно данных в теле отчета: {len(data_lines)} строк")
 
+        grouped = cls._flatten_grouped(data_lines)
+        if grouped is not None:
+            logger.info(f"✅ Выгрузка с группировкой разложена в плоскую таблицу: {grouped.shape}")
+            return grouped
+
         # Создаем буфер для чтения CSV
         csv_buffer = io.StringIO("\n".join(data_lines))
 
@@ -146,6 +151,63 @@ class ReportHeaderParser:
 
         logger.debug(f"✅ DataFrame загружен: {len(df)} строк × {len(df.columns)} колонок")
         return df
+
+    @staticmethod
+    def _split_cells(line: str, width: int) -> list[str]:
+        cells = line.rstrip("\r\n").split("\t")
+        return cells + [""] * (width - len(cells))
+
+    @classmethod
+    def _flatten_grouped(cls, data_lines: list[str]) -> pl.DataFrame | None:
+        """Раскладывает выгрузку с группировкой в плоскую таблицу; None — файл не сгруппирован.
+
+        Шапка сгруппированного отчёта двухстрочная:
+            Период, день <пусто> Мера1 Мера2 ...
+            Склад        Номенклатура <пусто> ...
+        Строка с пустой последней ячейкой измерений — подытог группы: значение группы
+        запоминается и проставляется во все детальные строки, сама строка отбрасывается.
+        """
+        width = max(len(line.split("\t")) for line in data_lines[:2])
+        h1 = [c.strip() for c in cls._split_cells(data_lines[0], width)]
+        h2 = [c.strip() for c in cls._split_cells(data_lines[1], width)]
+
+        dims = 0  # число измерений = ведущие непустые ячейки 2-й строки шапки
+        while dims < width and h2[dims]:
+            dims += 1
+        group_cols = [c for c in h1[:dims] if c]
+        measures = h1[dims:]
+        grouped = (
+            dims >= 2
+            and any(not c for c in h1[:dims])  # в 1-й строке есть «дыра» над детальными измерениями
+            and not any(h2[dims:])  # у мер во 2-й строке пусто
+            and bool(measures)
+            and all(measures)
+            and len(group_cols) < dims
+        )
+        if not grouped:
+            return None
+
+        detail_cols = h2[:dims]
+        columns = group_cols + detail_cols + measures
+        rows: list[list[str | None]] = []
+        group_values: list[str | None] = [None] * len(group_cols)
+
+        for line in data_lines[2:]:
+            cells = cls._split_cells(line, width)
+            dim_cells = cells[:dims]
+            if not dim_cells[-1].strip():
+                level = sum(1 for c in dim_cells if c.strip())
+                if level:
+                    group_values[min(level, len(group_cols)) - 1] = dim_cells[0].strip()
+                continue
+            rows.append([v or None for v in [*group_values, *dim_cells, *cells[dims:]]])
+
+        if not rows:
+            raise ValueError("❌ В выгрузке с группировкой нет детальных строк")
+        return pl.DataFrame(
+            {name: [row[i] for row in rows] for i, name in enumerate(columns)},
+            schema={name: pl.Utf8 for name in columns},
+        )
 
     @classmethod
     def load_inventory_csv(
