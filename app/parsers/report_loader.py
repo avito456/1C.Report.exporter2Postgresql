@@ -157,50 +157,94 @@ class ReportHeaderParser:
         cells = line.rstrip("\r\n").split("\t")
         return cells + [""] * (width - len(cells))
 
+    @staticmethod
+    def _leading_filled(cells: list[str], limit: int) -> int:
+        """Число ведущих непустых ячеек (в пределах limit)."""
+        count = 0
+        while count < limit and cells[count].strip():
+            count += 1
+        return count
+
     @classmethod
     def _flatten_grouped(cls, data_lines: list[str]) -> pl.DataFrame | None:
-        """Раскладывает выгрузку с группировкой в плоскую таблицу; None — файл не сгруппирован.
+        """Раскладывает ступенчатую N-уровневую группировку 1С в плоскую таблицу.
 
-        Шапка сгруппированного отчёта двухстрочная:
-            Период, день <пусто> Мера1 Мера2 ...
-            Склад        Номенклатура <пусто> ...
-        Строка с пустой последней ячейкой измерений — подытог группы: значение группы
-        запоминается и проставляется во все детальные строки, сама строка отбрасывается.
+        Шапка сгруппированного отчёта — многострочная «лестница» (2..4 строки); правый
+        блок ячеек — меры, заполненные только в верхней строке шапки:
+
+            stock_date                              stock_amount_way  stock_cost_way_rub   (h1)
+            wh_name   wh_guid                                                             (h2)
+            item_name item_guid f(cost) item_type price                                   (h3)
+
+        В зоне измерений каждый уровень занимает ведущие колонки, столбец 0 — общий
+        «якорь»: у подытога в нём значение группы, у детальной строки — первое детальное
+        измерение. Подытог закрывает уровень длиной в число заполненных ведущих ячеек,
+        его значения запоминаются в стеке и проставляются в последующие детальные строки;
+        сама строка отбрасывается. None — файл не является ступенчато-сгруппированным.
         """
-        width = max(len(line.split("\t")) for line in data_lines[:2])
-        h1 = [c.strip() for c in cls._split_cells(data_lines[0], width)]
-        h2 = [c.strip() for c in cls._split_cells(data_lines[1], width)]
+        if len(data_lines) < 2:
+            return None
+        width = max(len(line.split("\t")) for line in data_lines[:4])
 
-        dims = 0  # число измерений = ведущие непустые ячейки 2-й строки шапки
-        while dims < width and h2[dims]:
-            dims += 1
-        group_cols = [c for c in h1[:dims] if c]
-        measures = h1[dims:]
+        def _cells(index: int) -> list[str]:
+            return [c.strip() for c in cls._split_cells(data_lines[index], width)]
+
+        first = _cells(0)
+        second = _cells(1)
+
+        # Зона мер: первый столбец, где верхняя строка шапки заполнена, а вторая — пуста.
+        measure_start = next((j for j in range(1, width) if first[j] and not second[j]), None)
+        if measure_start is None or not all(first[measure_start:]):
+            return None
+        dim_count = measure_start
+
+        # Длина шапки: до первой строки, у которой заполнена хоть одна ячейка мер.
+        header = [first, second]
+        row_index = 2
+        while row_index < len(data_lines):
+            row = _cells(row_index)
+            if any(row[j] for j in range(measure_start, width)):
+                break
+            header.append(row)
+            row_index += 1
+
+        # Уровни группировки — все строки шапки, кроме нижней (детальной).
+        spans = [cls._leading_filled(row, dim_count) for row in header[:-1]]
+        detail_cols = [j for j in range(dim_count) if header[-1][j]]
         grouped = (
-            dims >= 2
-            and any(not c for c in h1[:dims])  # в 1-й строке есть «дыра» над детальными измерениями
-            and not any(h2[dims:])  # у мер во 2-й строке пусто
-            and bool(measures)
-            and all(measures)
-            and len(group_cols) < dims
+            len(spans) >= 1
+            and all(span > 0 for span in spans)
+            and all(a < b for a, b in zip(spans, spans[1:], strict=False))  # строго возрастают
+            and spans[-1] < dim_count  # над детальными измерениями есть групповой уровень
+            and len(detail_cols) > spans[-1]
         )
         if not grouped:
             return None
 
-        detail_cols = h2[:dims]
-        columns = group_cols + detail_cols + measures
-        rows: list[list[str | None]] = []
-        group_values: list[str | None] = [None] * len(group_cols)
+        level_cols = [range(span) for span in spans]
+        columns = (
+            [header[r][j] for r in range(len(spans)) for j in level_cols[r]]
+            + [header[-1][j] for j in detail_cols]
+            + first[measure_start:]
+        )
 
-        for line in data_lines[2:]:
+        stack: list[list[str | None]] = [[None] * span for span in spans]
+        rows: list[list[str | None]] = []
+
+        for line in data_lines[row_index:]:
             cells = cls._split_cells(line, width)
-            dim_cells = cells[:dims]
-            if not dim_cells[-1].strip():
-                level = sum(1 for c in dim_cells if c.strip())
-                if level:
-                    group_values[min(level, len(group_cols)) - 1] = dim_cells[0].strip()
+            dim_cells = cells[:dim_count]
+            if all(dim_cells[j].strip() for j in detail_cols):
+                flat = [value for level in stack for value in level]
+                rows.append([v or None for v in [*flat, *dim_cells, *cells[dim_count:]]])
                 continue
-            rows.append([v or None for v in [*group_values, *dim_cells, *cells[dims:]]])
+            # Подытог уровня: ведущих заполненных ячеек ровно span уровня.
+            filled = cls._leading_filled(dim_cells, dim_count)
+            if filled in spans:
+                r = spans.index(filled)
+                stack[r] = [dim_cells[j].strip() for j in level_cols[r]]
+                for deeper in range(r + 1, len(stack)):
+                    stack[deeper] = [None] * spans[deeper]
 
         if not rows:
             raise ValueError("❌ В выгрузке с группировкой нет детальных строк")
