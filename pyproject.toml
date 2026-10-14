@@ -3,7 +3,7 @@ name = "dvh-from-txt"
 version = "2.27.2"
 description = "Сервис отправки данных выгрузки отчетов 1С в TXT --> Postgresql"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "asyncpg>=0.31.0",
     "fastapi>=0.128.1",
