@@ -236,9 +236,11 @@ class ReportHeaderParser:
         stack: list[list[str | None]] = [[None] * span for span in spans]
         rows: list[list[str | None]] = []
 
+        ragged_skipped = 0
         for line in data_lines[row_index:]:
             cells = cls._split_cells(line, width)
             if len(cells) != width:
+                ragged_skipped += 1
                 continue  # пропускаем некорректные строки с лишними/недостающими табами
             dim_cells = cells[:dim_count]
             if any(dim_cells[j].strip() for j in detail_only):
@@ -255,6 +257,8 @@ class ReportHeaderParser:
 
         if not rows:
             raise ValueError("❌ В выгрузке с группировкой нет детальных строк")
+        if ragged_skipped > 0:
+            logger.warning(f"⚠️ Пропущено битых строк (несовпадение числа табов): {ragged_skipped}")
         return pl.DataFrame(
             {name: [row[i] for row in rows] for i, name in enumerate(columns)},
             schema={name: pl.Utf8 for name in columns},
