@@ -236,7 +236,6 @@ class ReportHeaderParser:
         stack: list[list[str | None]] = [[None] * span for span in spans]
         rows: list[list[str | None]] = []
 
-        meas_count_total = len(first[measure_start:]) if measure_start < len(first) else 0
         for line in data_lines[row_index:]:
             cells = cls._split_cells(line, width)
             if len(cells) != width:
