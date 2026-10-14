@@ -239,13 +239,8 @@ class ReportHeaderParser:
         meas_count_total = len(first[measure_start:]) if measure_start < len(first) else 0
         for line in data_lines[row_index:]:
             cells = cls._split_cells(line, width)
-            # Нормализация ragged-строк: выравниваем меру справа, если есть лишние ячейки
             if len(cells) != width:
-                if len(cells) > width and meas_count_total > 0 and len(cells) - meas_count_total >= spans[-1]:
-                    measures = cells[-meas_count_total:] if meas_count_total > 0 else []
-                    dims = cells[:dim_count] + ["".join(cells[dim_count : -meas_count_total])] if meas_count_total > 0 else cells
-                    cells = dims + measures
-                # if fewer, pad as-is (current behavior)
+                continue  # пропускаем некорректные строки с лишними/недостающими табами
             dim_cells = cells[:dim_count]
             if any(dim_cells[j].strip() for j in detail_only):
                 flat = [value for level in stack for value in level]
