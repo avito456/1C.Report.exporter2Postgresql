@@ -70,3 +70,10 @@ def test_not_mxl_file(tmp_path):
     bad.write_text("a\tb\tc\n")
     with pytest.raises(MxlFormatError):
         MxlReportParser.load_mxl(bad)
+
+
+def test_server_watches_mxl_and_txt():
+    from app import server
+
+    assert server.REPORT_EXTENSIONS == (".txt", ".mxl")
+    assert "report.MXL".lower().endswith(server.REPORT_EXTENSIONS)

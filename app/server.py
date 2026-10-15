@@ -1,6 +1,6 @@
 """Файловый монитор и HTTP-эндпоинты статуса (FastAPI).
 
-PollingObserver (watchdog) и фоновый сканер ставят новые/изменённые .txt-файлы
+PollingObserver (watchdog) и фоновый сканер ставят новые/изменённые .txt/.mxl-файлы
 в asyncio-очередь; FileProcessor по одному разбирает файл, находит одноимённый
 TOML с настройками и загружает данные в БД. Эндпоинты: /status и /health.
 Защита от повторной обработки — files_in_processing с выселением «зависших» записей.
@@ -22,7 +22,7 @@ from watchdog.observers.polling import PollingObserver
 
 from app.db import db_uploader
 from app.db.errors import build_load_error
-from app.parsers import report_loader
+from app.parsers import mxl_parser, report_loader
 from app.settings import tables_settings
 from app.settings.env import config, get_version
 
@@ -50,6 +50,8 @@ DB_PARAMS = {
 APP_VERSION = get_version()
 PROCESS_STALE_SECONDS = 1800.0
 READ_TIMEOUT_SECONDS = 300.0
+MXL_EXTENSION = ".mxl"
+REPORT_EXTENSIONS = (".txt", MXL_EXTENSION)
 FALLBACK_SCAN_INTERVAL = 5.0
 FALLBACK_MAX_AGE_SECONDS = 10.0  # старше — файл считается давно обработанным
 
@@ -122,7 +124,7 @@ def _fallback_scan(report_dir: str) -> None:
     try:
         now = time.time()
         for entry in Path(report_dir).iterdir():
-            if not (entry.is_file() and entry.name.lower().endswith(".txt")):
+            if not (entry.is_file() and entry.name.lower().endswith(REPORT_EXTENSIONS)):
                 continue
 
             try:
@@ -196,12 +198,12 @@ def complete_end_period(
 
 
 class FileHandler(FileSystemEventHandler):
-    """Реагирует на создание и изменение .txt-файлов отчётов."""
+    """Реагирует на создание и изменение .txt/.mxl-файлов отчётов."""
 
     def _handle(self, event, reason: str) -> None:
         if event.is_directory or shutdown_event.is_set():
             return
-        if event.src_path.lower().endswith(".txt"):
+        if event.src_path.lower().endswith(REPORT_EXTENSIONS):
             _enqueue(event.src_path, reason)
 
     def on_created(self, event):
@@ -243,10 +245,14 @@ class FileProcessor:
         ts: dict | None = None
 
         try:
-            parser = report_loader.ReportHeaderParser()
+            load_report = (
+                mxl_parser.MxlReportParser.load_mxl
+                if path.lower().endswith(MXL_EXTENSION)
+                else report_loader.ReportHeaderParser().load_inventory_csv
+            )
             loop = asyncio.get_running_loop()
             df, header = await asyncio.wait_for(
-                loop.run_in_executor(None, parser.load_inventory_csv, path),
+                loop.run_in_executor(None, load_report, path),
                 timeout=READ_TIMEOUT_SECONDS,
             )
 
