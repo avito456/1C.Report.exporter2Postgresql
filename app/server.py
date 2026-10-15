@@ -312,7 +312,7 @@ class FileProcessor:
                 monitor_status["processed_files_status"][Path(path).name] = datetime.now()
 
             logger.info(
-                f"\n{'-' * 100}\nFile processed successfully: {path} (version {APP_VERSION})\n{'-' * 100}"
+                f"\n{'-' * 140}\n✅ File processed successfully: {path} (version {APP_VERSION}) --> [{ts["schema_name"]}].[{ts["table_name"]}]\n{'-' * 140}"
             )
         except Exception as exc:
             table_name = ts.get("table_name") if isinstance(ts, dict) else None
