@@ -1,0 +1,71 @@
+use = true
+table_name = "fwd__mrt_stock"
+schema_name = "report"
+event_time = "stock_date"
+comment = "Сверка остатков и себестоимости по Товарам на Комиссии на КОНЕЦ ДНЯ (рассылка 1С 'СВЕРКА_DWH_ТоварыНаКомиссии')"
+
+[[columns]]
+name = "stock_date"
+alias = "stock_date"
+type = "date"
+comment = "Период"
+
+[[columns]]
+name = "wh_guid"
+alias = "wh_guid"
+type = "uuid"
+comment = "GUID Склада"
+
+[[columns]]
+name = "item_guid"
+alias = "item_guid"
+type = "uuid"
+comment = "GUID Номенклатуры"
+
+[[columns]]
+name = "wh_name"
+alias = "wh_name"
+type = "string"
+comment = "Склад"
+
+[[columns]]
+name = "item_name"
+alias = "item_name"
+type = "string"
+comment = "Номенклатура"
+
+[[columns]]
+name = "f(cost)"
+alias = "f_cost"
+type = "string"
+comment = "Формула рассчета себестоимости"
+
+[[columns]]
+name = "purche_type"
+alias = "purche_type"
+type = "string"
+comment = "Тип номенклатуры"
+
+[[columns]]
+name = "price"
+alias = "price"
+type = "float64"
+comment = "Цена"
+
+[[columns]]
+name = "stock_amount_fwd"
+alias = "stock_amount_fwd"
+type = "float64"
+comment = "Количество конечный остаток"
+
+[[columns]]
+name = "stock_cost_fwd_rub"
+alias = "stock_cost_fwd_rub"
+type = "float64"
+comment = "Себестоимость конечный остаток"
+
+[[indexes]]
+use = true
+name = "fwd_stock_date__wh_guid__item_guid__idx"
+columns = ["stock_date", "wh_guid", "item_guid"]
+unique = true

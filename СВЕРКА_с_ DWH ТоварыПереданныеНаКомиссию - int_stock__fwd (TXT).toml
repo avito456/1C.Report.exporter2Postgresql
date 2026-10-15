@@ -1,0 +1,65 @@
+use = true
+table_name = "int_stock__fwd__expected"
+schema_name = "report"
+event_time = "stock_date"
+comment = "СВЕРКА_с_ DWH ТоварыПереданныеНаКомиссию - int_stock__fwd (источник - рассылка отчетов)"
+
+[[columns]]
+name = "stock_date"
+alias = "stock_date"
+type = "datetime64[ns]"
+comment = "Дата начала месяца"
+
+[[columns]]
+name = "wh_name"
+alias = "wh_name"
+type = "string"
+comment = "Склад"
+
+[[columns]]
+name = "item_name"
+alias = "item_name"
+type = "string"
+comment = "Номенклатура"
+
+[[columns]]
+name = "wh_guid"
+alias = "wh_guid"
+type = "uuid"
+comment = "GUID Склада"
+
+[[columns]]
+name = "item_guid"
+alias = "item_guid"
+type = "uuid"
+comment = "GUID Номенклатуры"
+
+[[columns]]
+name = "starting_balance"
+alias = "starting_balance"
+type = "float64"
+comment = "Начальный остаток"
+
+[[columns]]
+name = "do"
+alias = "do"
+type = "float64"
+comment = "Приход"
+
+[[columns]]
+name = "ko"
+alias = "ko"
+type = "float64"
+comment = "Расход"
+
+[[columns]]
+name = "ending_balance"
+alias = "ending_balance"
+type = "float64"
+comment = "Конечный остаток"
+
+[[indexes]]
+use = true
+name = "default_idx"
+columns = ["stock_date", "wh_guid", "item_guid"]
+unique = true
